@@ -12,10 +12,10 @@
 
     <!-- PWA Configuration -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#ffffff">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="EPS Muscu">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
@@ -1133,6 +1133,96 @@
             .ressenti-grid { grid-template-columns: repeat(2, 1fr); }
             .rpe-grid { grid-template-columns: repeat(5, 1fr); }
         }
+        /* ===============================================
+           THÈME CLAIR "MARINE & OR" (couleurs du logo)
+           =============================================== */
+        body:not(.mode-sombre) {
+            --primary-color: #1e3a8a; --primary-dark: #13284d; --secondary-color: #0ea5e9; --accent-color: #f59e0b;
+            --bg-dark: #eef2f9; --bg-medium: #f8fafc; --text-light: #13284d; --text-cyan: #1e3a8a;
+            --navy: #13284d; --gold: #f5b82e; --gold-soft: #fef3c7; --line: #e2e8f0;
+        }
+        body:not(.mode-sombre) { background: linear-gradient(180deg, #eef2f9 0%, #f8fafc 100%) fixed; color: #13284d; }
+        body:not(.mode-sombre) h1, body:not(.mode-sombre) h2, body:not(.mode-sombre) h3, body:not(.mode-sombre) h4, body:not(.mode-sombre) h5 { color: #13284d; }
+        body:not(.mode-sombre) .text-white, body:not(.mode-sombre) .text-white * { color: #13284d !important; }
+        body:not(.mode-sombre) .text-cyan { color: #1e3a8a !important; }
+        body:not(.mode-sombre) .muted, body:not(.mode-sombre) .topbar-sub, body:not(.mode-sombre) .stat-lbl, body:not(.mode-sombre) .live-cible, body:not(.mode-sombre) .set-prev, body:not(.mode-sombre) .sets th, body:not(.mode-sombre) .field label { color: #64748b !important; }
+        body:not(.mode-sombre) .topbar { background: rgba(255,255,255,0.92); border-bottom: 1px solid var(--line); }
+        body:not(.mode-sombre) .topbar-title { color: #13284d; }
+        body:not(.mode-sombre) .chip-user { background: #eef2f9; color: #13284d; }
+        body:not(.mode-sombre) .bottom-nav { background: rgba(255,255,255,0.97); border-top: 1px solid var(--line); box-shadow: 0 -4px 20px rgba(19,40,77,0.06); }
+        body:not(.mode-sombre) .nav-btn { color: #94a3b8; }
+        body:not(.mode-sombre) .nav-btn.active { color: #13284d; }
+        body:not(.mode-sombre) .nav-btn.active .nav-ico { filter: none; }
+        body:not(.mode-sombre) .card, body:not(.mode-sombre) .box, body:not(.mode-sombre) .seance-card, body:not(.mode-sombre) .stat, body:not(.mode-sombre) .live-ex, body:not(.mode-sombre) .hist-card, body:not(.mode-sombre) .exercise-card, body:not(.mode-sombre) .muscle-info-card, body:not(.mode-sombre) .rm-history-card, body:not(.mode-sombre) .session-card, body:not(.mode-sombre) .charges-calculator, body:not(.mode-sombre) .timer-container, body:not(.mode-sombre) .search-container {
+            background: #ffffff !important; border: 1px solid var(--line) !important;
+            box-shadow: 0 4px 16px rgba(19, 40, 77, 0.06) !important; color: #13284d;
+        }
+        body:not(.mode-sombre) .stat-val { color: #13284d; }
+        body:not(.mode-sombre) .box-title, body:not(.mode-sombre) .seance-name, body:not(.mode-sombre) .live-ex-name, body:not(.mode-sombre) .ex-edit-name, body:not(.mode-sombre) .exercise-card h4, body:not(.mode-sombre) .muscle-info-card h4 { color: #13284d !important; }
+        body:not(.mode-sombre) .exercise-card ul li, body:not(.mode-sombre) .muscle-info-section p, body:not(.mode-sombre) .muscle-info-section ul li { color: #334155 !important; }
+        body:not(.mode-sombre) .muscle-info-section h5 { color: #1e3a8a !important; }
+        body:not(.mode-sombre) .input, body:not(.mode-sombre) .search-input, body:not(.mode-sombre) .set-input, body:not(.mode-sombre) .timer-input, body:not(.mode-sombre) select.input, body:not(.mode-sombre) textarea.input {
+            background: #f8fafc !important; color: #13284d !important; border: 1.5px solid #cbd5e1 !important;
+        }
+        body:not(.mode-sombre) .input:focus, body:not(.mode-sombre) .search-input:focus, body:not(.mode-sombre) .set-input:focus { border-color: #1e3a8a !important; box-shadow: 0 0 0 3px rgba(30,58,138,0.12) !important; }
+        body:not(.mode-sombre) .set-input::placeholder, body:not(.mode-sombre) .input::placeholder { color: #94a3b8 !important; }        /* Boutons : marine = action principale, or = validation, vert pastel = créer/terminer */
+        body:not(.mode-sombre) .btn-primary { background: linear-gradient(135deg, #1e3a8a 0%, #13284d 100%) !important; color: #fff !important; }
+        body:not(.mode-sombre) .btn-success { background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%) !important; color: #052e16 !important; font-weight: 800; }
+        body:not(.mode-sombre) .btn-secondary { background: #eef2f9 !important; color: #13284d !important; border: 1px solid #cbd5e1; }
+        body:not(.mode-sombre) .btn-ghost { background: #fff; border: 1px solid #cbd5e1; color: #13284d; }
+        body:not(.mode-sombre) .btn-icon { background: #eef2f9; color: #13284d; }
+        body:not(.mode-sombre) .btn-link { color: #1e3a8a; }
+        body:not(.mode-sombre) .sub-tab-btn, body:not(.mode-sombre) .tab-btn { background: #fff !important; color: #475569 !important; border: 1px solid var(--line) !important; }
+        body:not(.mode-sombre) .sub-tab-btn.active, body:not(.mode-sombre) .tab-btn.active { background: #13284d !important; color: #fff !important; border-color: #13284d !important; }
+        body:not(.mode-sombre) .obj-chip, body:not(.mode-sombre) .muscle-chip, body:not(.mode-sombre) .filter-chip, body:not(.mode-sombre) .pick-btn, body:not(.mode-sombre) .profil-btn, body:not(.mode-sombre) .ressenti-btn {
+            background: #fff !important; color: #13284d !important; border: 1.5px solid #cbd5e1 !important;
+        }
+        body:not(.mode-sombre) .obj-chip.active, body:not(.mode-sombre) .ressenti-btn.active { background: var(--gold-soft) !important; border-color: var(--gold) !important; }
+        body:not(.mode-sombre) .muscle-chip.active, body:not(.mode-sombre) .filter-chip.active { background: #13284d !important; color: #fff !important; border-color: #13284d !important; }
+        body:not(.mode-sombre) .pick-btn .plus { color: #1e3a8a; }
+        body:not(.mode-sombre) .pick-btn.added { border-color: #4ade80 !important; background: #f0fdf4 !important; }
+        body:not(.mode-sombre) .pick-btn.added .plus { color: #16a34a; }
+        body:not(.mode-sombre) .rpe-btn { background: #eef2f9; color: #13284d; }
+        body:not(.mode-sombre) .rpe-btn.active { background: #13284d; color: #fff; }
+        body:not(.mode-sombre) .ex-edit { background: #f8fafc; border-left-color: var(--gold); }
+        body:not(.mode-sombre) .stepper button { background: #e2e8f0; color: #13284d; }
+        body:not(.mode-sombre) .stepper span, body:not(.mode-sombre) .locked { color: #13284d; }
+        body:not(.mode-sombre) .tag { background: #eef2f9; color: #334155; }
+        body:not(.mode-sombre) .badge-obj { background: var(--gold-soft); color: #92400e; }
+        body:not(.mode-sombre) .sets tr.set-done td { background: #fef9e7; }
+        body:not(.mode-sombre) .set-num { color: #13284d; }
+        body:not(.mode-sombre) .set-check { background: #fff; border-color: #cbd5e1; color: #cbd5e1; }
+        body:not(.mode-sombre) .set-check.on { background: var(--gold); border-color: var(--gold); color: #13284d; }
+        body:not(.mode-sombre) .live-ex.done { border-color: var(--gold) !important; }
+        body:not(.mode-sombre) .echauf label { color: #13284d; }
+        body:not(.mode-sombre) .consignes { background: #fff7ed; border-color: #fdba74; }
+        body:not(.mode-sombre) .consignes summary { color: #c2410c; }
+        body:not(.mode-sombre) .consignes div { color: #431407; }
+        body:not(.mode-sombre) .warn-banner { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+        body:not(.mode-sombre) .resume-banner { background: linear-gradient(135deg, #dcfce7, #e0f2fe); border-color: #86efac; }
+        body:not(.mode-sombre) .install-tip { background: #f5f3ff; border-color: #c4b5fd; color: #4c1d95; }
+        body:not(.mode-sombre) .rest-bar { background: #13284d; border-top: 3px solid var(--gold); }
+        body:not(.mode-sombre) .rest-bar .muted { color: #cbd5e1 !important; }
+        body:not(.mode-sombre) .rest-time { color: #fde68a; }
+        body:not(.mode-sombre) .rest-bar .btn-secondary { background: rgba(255,255,255,0.12) !important; color: #fff !important; border-color: rgba(255,255,255,0.25); }
+        body:not(.mode-sombre) .rest-bar .btn-primary { background: var(--gold) !important; color: #13284d !important; }
+        body:not(.mode-sombre) .rest-progress { background: var(--gold); }
+        body:not(.mode-sombre) .toast { background: #13284d; color: #fff; }
+        body:not(.mode-sombre) .toast.error { background: #fecaca; color: #7f1d1d; }
+        body:not(.mode-sombre) .charges-table th { background: #13284d !important; color: #fff !important; }
+        body:not(.mode-sombre) .mobile-table td, body:not(.mode-sombre) .charges-table td { color: #13284d !important; border-color: var(--line) !important; }
+        body:not(.mode-sombre) .mobile-table tr:hover, body:not(.mode-sombre) .charges-table tr:hover { background: #f8fafc !important; }        /* Blocs colorés écrits directement dans le contenu des cours */
+        body:not(.mode-sombre) [style*="rgba(15, 23, 42"], body:not(.mode-sombre) [style*="rgba(15,23,42"] { background: #f8fafc !important; border-color: var(--line) !important; }
+        body:not(.mode-sombre) [style*="rgba(6, 182, 212, 0.1)"] { background: #eff6ff !important; }
+        body:not(.mode-sombre) [style*="color: white"], body:not(.mode-sombre) [style*="color:#fff"], body:not(.mode-sombre) [style*="color: #fff"] { color: #13284d !important; }
+        body:not(.mode-sombre) .btn[style*="color: white"], body:not(.mode-sombre) .btn-primary[style] { color: #fff !important; }
+        body:not(.mode-sombre) .mobile-table, body:not(.mode-sombre) .charges-table { background: #ffffff !important; border: 1px solid var(--line); }
+        body:not(.mode-sombre) .mobile-table th { background: #eef2f9 !important; color: #13284d !important; border-bottom: 1px solid var(--line) !important; width: 38%; }
+        body:not(.mode-sombre) [style*="rgba(0,0,0,0.2)"], body:not(.mode-sombre) [style*="rgba(0,0,0,0.3)"] { background: #f1f5f9 !important; }
+        body:not(.mode-sombre) [style*="rgba(251, 191, 36, 0.1)"] { background: #fffbeb !important; }
+        body:not(.mode-sombre) .exercise-card h4[style*="color"] { filter: saturate(1.1) brightness(0.85); }
+        body:not(.mode-sombre) .sticky-actions { background: linear-gradient(to top, #f8fafc 70%, rgba(248,250,252,0)) !important; }
+        body:not(.mode-sombre) .resume-banner .muted { color: #475569 !important; }
 
 </style>
 </head>
@@ -1144,7 +1234,7 @@
         // Pas de code d'accès : chaque élève garde le même iPad pendant le cycle.
         // ===============================================
 
-        const APP_VERSION = '3.9';   // à garder identique au numéro de sw.js
+        const APP_VERSION = '4.0';   // à garder identique au numéro de sw.js
         const PROFILS_KEY = 'livret-profils';
         const DERNIER_KEY = 'livret-dernier-profil';
 
@@ -1845,7 +1935,8 @@
                 this.rmHistory = storage.getJSON('rmHistory', []);
                 this.calculatedCharges = storage.getJSON('calculatedCharges', {});
                 const theme = storage.get('theme');
-                this.currentTheme = theme.exists ? theme.value.replace(/"/g, '') : 'cyan';
+                // Clair par défaut ; les anciennes couleurs (cyan, bleu...) passent en clair
+                this.currentTheme = theme.exists && theme.value.replace(/"/g, '') === 'sombre' ? 'sombre' : 'clair';
                 this.applyTheme(this.currentTheme);
                 const mode = storage.get('userMode');
                 this.userMode = mode.exists && mode.value.replace(/"/g, '') === 'avance' ? 'avance' : 'debutant';
@@ -1926,8 +2017,9 @@
             }
 
             applyTheme(theme) {
-                document.body.className = '';
-                if (theme && theme !== 'cyan') document.body.classList.add(`theme-${theme}`);
+                document.body.className = theme === 'sombre' ? 'mode-sombre' : '';
+                const meta = document.querySelector('meta[name="theme-color"]');
+                if (meta) meta.setAttribute('content', theme === 'sombre' ? '#0f172a' : '#ffffff');
             }
 
             changeTheme(theme) {
@@ -3017,7 +3109,7 @@
                             </div>
                             <div class="row">
                                 <div class="stat" style="padding: 0.45rem 0.8rem;"><div class="stat-val" style="font-size: 1.25rem;">${s.bestKg ? s.bestKg + ' kg' : 'PDC'}</div><div class="stat-lbl">record × ${s.bestReps}</div></div>
-                                ${avance && s.best1RM ? `<div class="stat" style="padding: 0.45rem 0.8rem;"><div class="stat-val" style="font-size: 1.25rem; color: #fdba74;">${s.best1RM} kg</div><div class="stat-lbl">1RM estimé</div></div>` : ''}
+                                ${avance && s.best1RM ? `<div class="stat" style="padding: 0.45rem 0.8rem;"><div class="stat-val" style="font-size: 1.25rem; color: #f59e0b;">${s.best1RM} kg</div><div class="stat-lbl">1RM estimé</div></div>` : ''}
                             </div>
                         </div>
                         ${s.points.length >= 2 ? `<div style="margin-top: 0.75rem;"><canvas id="prog-chart-${i}" height="110"></canvas></div>` : `<div class="muted mt-2" style="font-size: 0.85rem;">La courbe apparaîtra après 2 séances.</div>`}
@@ -3027,23 +3119,27 @@
             initProgressCharts() {
                 if (typeof Chart === 'undefined') return;
                 const avance = this.userMode === 'avance';
+                const sombre = this.currentTheme === 'sombre';
+                const coul = sombre
+                    ? { l1: '#7dd3fc', f1: 'rgba(125,211,252,0.15)', l2: '#fdba74', pdc: '#86efac', fpdc: 'rgba(134,239,172,0.15)', txt: '#e2e8f0', grid: 'rgba(255,255,255,0.08)' }
+                    : { l1: '#1e3a8a', f1: 'rgba(30,58,138,0.10)', l2: '#f59e0b', pdc: '#16a34a', fpdc: 'rgba(22,163,74,0.10)', txt: '#334155', grid: 'rgba(19,40,77,0.08)' };
                 this.statsExercices().forEach((s, i) => {
                     const canvas = document.getElementById(`prog-chart-${i}`);
                     if (!canvas) return;
                     const pdc = s.points.every(p => !p.kg);
                     const datasets = pdc
-                        ? [{ label: 'Reps max', data: s.points.map(p => p.reps), borderColor: '#86efac', backgroundColor: 'rgba(134,239,172,0.15)', tension: 0.3, fill: true, pointRadius: 5 }]
-                        : [{ label: 'Charge max (kg)', data: s.points.map(p => p.kg), borderColor: '#7dd3fc', backgroundColor: 'rgba(125,211,252,0.15)', tension: 0.3, fill: true, pointRadius: 5 }];
-                    if (avance && !pdc) datasets.push({ label: '1RM estimé (kg)', data: s.points.map(p => p.rm), borderColor: '#fdba74', backgroundColor: 'transparent', borderDash: [6, 4], tension: 0.3, pointRadius: 4 });
+                        ? [{ label: 'Reps max', data: s.points.map(p => p.reps), borderColor: coul.pdc, backgroundColor: coul.fpdc, tension: 0.3, fill: true, pointRadius: 5 }]
+                        : [{ label: 'Charge max (kg)', data: s.points.map(p => p.kg), borderColor: coul.l1, backgroundColor: coul.f1, tension: 0.3, fill: true, pointRadius: 5 }];
+                    if (avance && !pdc) datasets.push({ label: '1RM estimé (kg)', data: s.points.map(p => p.rm), borderColor: coul.l2, backgroundColor: 'transparent', borderDash: [6, 4], tension: 0.3, pointRadius: 4 });
                     this.charts.push(new Chart(canvas, {
                         type: 'line',
                         data: { labels: s.points.map(p => new Date(p.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })), datasets },
                         options: {
                             responsive: true, maintainAspectRatio: true, aspectRatio: 3, animation: false,
-                            plugins: { legend: { display: datasets.length > 1, labels: { color: '#e2e8f0' } } },
+                            plugins: { legend: { display: datasets.length > 1, labels: { color: coul.txt } } },
                             scales: {
-                                y: { beginAtZero: false, ticks: { color: '#e2e8f0' }, grid: { color: 'rgba(255,255,255,0.08)' } },
-                                x: { ticks: { color: '#e2e8f0' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                                y: { beginAtZero: false, ticks: { color: coul.txt }, grid: { color: coul.grid } },
+                                x: { ticks: { color: coul.txt }, grid: { color: coul.grid } }
                             }
                         }
                     }));
@@ -3132,9 +3228,10 @@
                     </div>
 
                     <div class="box">
-                        <div class="box-title">🎨 Couleur</div>
-                        <div class="theme-selector" style="margin-bottom: 0;">
-                            ${['cyan', 'blue', 'green', 'purple', 'orange'].map(t => `<button class="theme-btn theme-${t} ${this.currentTheme === t ? 'active' : ''}" onclick="app.changeTheme('${t}')"></button>`).join('')}
+                        <div class="box-title">🎨 Apparence</div>
+                        <div class="obj-chips">
+                            <button class="obj-chip ${this.currentTheme !== 'sombre' ? 'active' : ''}" onclick="app.changeTheme('clair')">☀️ Clair</button>
+                            <button class="obj-chip ${this.currentTheme === 'sombre' ? 'active' : ''}" onclick="app.changeTheme('sombre')">🌙 Mode sombre</button>
                         </div>
                     </div>
 

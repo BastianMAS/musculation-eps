@@ -1,4 +1,4 @@
-# Livret de Musculation - EPS (version 3.9)
+# Livret de Musculation - EPS (version 4.0)
 
 PWA de suivi d'entraînement en musculation (CA5) pour les iPad de l'établissement.
 
