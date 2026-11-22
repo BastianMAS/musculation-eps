@@ -1154,6 +1154,9 @@
         body:has(#rest-bar) .toast { bottom: calc(110px + env(safe-area-inset-bottom)); }
         .echauf label { min-height: 44px; }
         .btn-danger-link { color: #fca5a5 !important; }
+        .modal-fond { position: fixed; inset: 0; z-index: 99990; background: rgba(15,23,42,0.55); display: flex; align-items: center; justify-content: center; padding: 1.5rem; animation: toastIn 0.2s ease; }
+        .modal-boite { background: #1e293b; border-radius: 1.25rem; padding: 1.6rem 1.5rem; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+        .hist-detail .row .btn { margin-right: 0.4rem; }
         /* ===============================================
            THÈME CLAIR "MARINE & OR" (couleurs du logo)
            =============================================== */
@@ -1254,6 +1257,7 @@
         body:not(.mode-sombre) .guide-time { color: #13284d; }
         body:not(.mode-sombre) .etir-row { border-bottom-color: var(--line); }
         body:not(.mode-sombre) .btn-danger-link { color: #b91c1c !important; }
+        body:not(.mode-sombre) .modal-boite { background: #ffffff; }
 
 </style>
 </head>
@@ -1265,7 +1269,7 @@
         // Pas de code d'accès : chaque élève garde le même iPad pendant le cycle.
         // ===============================================
 
-        const APP_VERSION = '4.1';   // à garder identique au numéro de sw.js
+        const APP_VERSION = '4.2';   // à garder identique au numéro de sw.js
         const PROFILS_KEY = 'livret-profils';
         const DERNIER_KEY = 'livret-dernier-profil';
 
@@ -3220,8 +3224,10 @@
                 this.saveSessionHistory();
                 this.live = null;
                 this.saveLive();
+                this.openHistory = entry.id;
                 this.switchTab('historique');
                 toast('✅ Séance enregistrée, bien joué ! 💪');
+                setTimeout(() => this.rappelSauvegarde(), 900);
             }
 
             // ================= HISTORIQUE =================
@@ -3271,7 +3277,7 @@
                                         </div>`).join('')}
                                     ${h.notes ? `<div class="mt-2 text-white" style="font-style: italic; opacity: 0.9;">💬 « ${esc(h.notes)} »</div>` : ''}
                                     <div class="row mt-4">
-                                        ${h.exercices ? `<button class="btn btn-primary" onclick="app.exportBilanPDF('${h.id}')">📄 Fiche PDF</button>` : ''}
+                                        ${h.exercices ? `<button class="btn btn-success" onclick="app.exportBilanPDF('${h.id}', true)">📤 Envoyer mon bilan</button><button class="btn btn-secondary" onclick="app.exportBilanPDF('${h.id}')">📄 PDF</button>` : ''}
                                         <button class="btn btn-ghost" onclick="app.supprimerHistorique('${h.id}')">🗑️ Supprimer</button>
                                     </div>
                                 </div>` : ''}
@@ -3279,7 +3285,7 @@
                 }).join('');
             }
 
-            exportBilanPDF(id) {
+            exportBilanPDF(id, envoyer = false) {
                 const h = this.sessionHistory.find(x => x.id === id);
                 if (!h) return;
                 if (typeof window.jspdf === 'undefined') { toast('⚠️ Module PDF non chargé', 'error'); return; }
@@ -3321,7 +3327,9 @@
                 }
                 doc.setFontSize(8); doc.setTextColor(100, 116, 139);
                 doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} - Livret Musculation`, 105, 290, { align: 'center' });
-                doc.save(`bilan_${String(this.currentUser).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '_')}_${date.replace(/\//g, '-')}.pdf`);
+                const nomFichier = `bilan_${this.nomFichierEleve()}_${date.replace(/\//g, '-')}.pdf`;
+                if (envoyer) this.partagerFichier(doc.output('blob'), nomFichier, 'application/pdf', `Bilan de séance - ${this.currentUser}`);
+                else doc.save(nomFichier);
             }
 
             // ================= PROGRÈS =================
@@ -3501,39 +3509,17 @@
 
                     <div class="box">
                         <div class="box-title">💾 Sauvegarde</div>
-                        <div class="muted mb-3">Exporte ton livret (fichier) pour le garder ou l'envoyer à ton professeur.</div>
+                        <div class="muted mb-3">Exporte ton livret (fichier) pour le garder dans Fichiers ou l'envoyer à ton professeur.${(() => { const d = parseInt(storage.get('derniereSauvegarde').value) || 0; return d ? ` Dernière sauvegarde : ${new Date(d).toLocaleDateString('fr-FR')}.` : ' Aucune sauvegarde pour l\'instant.'; })()}</div>
                         <div class="row wrap">
                             <button class="btn btn-primary" onclick="app.exportData()">💾 Exporter mes données</button>
                             <button class="btn btn-secondary" onclick="app.importData()">📥 Importer</button>
                         </div>
                     </div>
 
-                    <div class="box">
-                        <div class="box-title">🔁 Fin de cycle</div>
-                        <div class="muted mb-3">Avant de rendre l'iPad à la fin du cycle : exporte ton livret, puis efface tous les profils de cet iPad pour la classe suivante.</div>
-                        <button class="btn btn-secondary" onclick="app.finDeCycle()">🔁 Exporter puis effacer l'iPad</button>
-                    </div>
-
                     ${!installe ? `<div class="install-tip mb-4">📲 <strong>Installe l'appli</strong> : Partager ⬆️ puis « Sur l'écran d'accueil ». Ouvre-la toujours depuis l'icône pour ne pas perdre tes séances.</div>` : ''}
 
                     <div class="text-center mt-4"><button class="btn btn-link btn-danger-link" onclick="app.supprimerProfil()">🗑️ Supprimer ce profil</button></div>
                     <div class="text-center muted mt-2" style="font-size: 0.8rem;">Version ${APP_VERSION}</div>`;
-            }
-
-            finDeCycle() {
-                if (!confirm('Fin de cycle :\n1. ton livret va être exporté (garde le fichier ou envoie-le à ton professeur) ;\n2. ensuite, TOUS les profils de cet iPad seront effacés.\n\nContinuer ?')) return;
-                this.exportData();
-                setTimeout(() => {
-                    if (!confirm('As-tu bien enregistré le fichier exporté ?\n\nOK = effacer tous les profils de cet iPad maintenant.')) return;
-                    const keys = [];
-                    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('user-')) keys.push(k); }
-                    keys.forEach(k => localStorage.removeItem(k));
-                    localStorage.removeItem(PROFILS_KEY);
-                    localStorage.removeItem(DERNIER_KEY);
-                    this.live = null; this.stopRest();
-                    this.changerProfil();
-                    toast('🔁 iPad prêt pour la classe suivante');
-                }, 1200);
             }
 
             exportData() {
@@ -3543,12 +3529,51 @@
                     calculatedCharges: this.calculatedCharges, theme: this.currentTheme, userMode: this.userMode
                 };
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                this.partagerFichier(blob, `livret-${this.nomFichierEleve()}-${new Date().toISOString().split('T')[0]}.json`, 'application/json', `Livret de musculation - ${this.currentUser}`);
+                storage.save('derniereSauvegarde', String(Date.now()));
+            }
+
+            nomFichierEleve() {
+                return String(this.currentUser).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '_');
+            }
+
+            // Feuille de partage de l'iPad (AirDrop, Mail, Enregistrer dans Fichiers) ; sinon téléchargement
+            partagerFichier(blob, nom, type, titre) {
+                try {
+                    const fichier = new File([blob], nom, { type });
+                    if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+                        navigator.share({ files: [fichier], title: titre }).catch(() => {});
+                        return;
+                    }
+                } catch (e) {}
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = url;
-                a.download = `livret-${String(this.currentUser).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '_')}-${new Date().toISOString().split('T')[0]}.json`;
+                a.href = url; a.download = nom;
                 document.body.appendChild(a); a.click(); a.remove();
                 setTimeout(() => URL.revokeObjectURL(url), 2000);
+            }
+
+            // Rappel de sauvegarde : en fin de séance, au plus une fois par semaine
+            rappelSauvegarde() {
+                const JOURS = 7;
+                const derniere = parseInt(storage.get('derniereSauvegarde').value) || 0;
+                const report = parseInt(storage.get('rappelReporte').value) || 0;
+                if (Date.now() - derniere < JOURS * 86400000 || Date.now() < report) return;
+                const fond = document.createElement('div');
+                fond.className = 'modal-fond';
+                fond.innerHTML = `
+                    <div class="modal-boite">
+                        <div style="font-size: 2.5rem;">💾</div>
+                        <div class="box-title" style="margin: 0.4rem 0;">Sauvegarde ton livret</div>
+                        <div class="muted mb-4">Une copie de tes séances, au cas où l'iPad serait réinitialisé. Choisis « Enregistrer dans Fichiers » ou envoie-la à ton professeur.</div>
+                        <div class="row" style="justify-content: center;">
+                            <button class="btn btn-ghost" id="modal-plus-tard">Plus tard</button>
+                            <button class="btn btn-primary" id="modal-sauver">💾 Sauvegarder</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(fond);
+                fond.querySelector('#modal-plus-tard').onclick = () => { storage.save('rappelReporte', String(Date.now() + 2 * 86400000)); fond.remove(); };
+                fond.querySelector('#modal-sauver').onclick = () => { this.exportData(); fond.remove(); toast('💾 Sauvegarde faite'); };
             }
 
             importData() {
