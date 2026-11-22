@@ -1157,6 +1157,19 @@
         .modal-fond { position: fixed; inset: 0; z-index: 99990; background: rgba(15,23,42,0.55); display: flex; align-items: center; justify-content: center; padding: 1.5rem; animation: toastIn 0.2s ease; }
         .modal-boite { background: #1e293b; border-radius: 1.25rem; padding: 1.6rem 1.5rem; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
         .hist-detail .row .btn { margin-right: 0.4rem; }
+        /* v4.3 : supersets / circuits */
+        .live-groupe { border: 2px dashed rgba(196,181,253,0.6); border-radius: 1.3rem; padding: 0.6rem 0.6rem 0.1rem; margin-bottom: 1rem; }
+        .live-groupe .live-ex { margin-bottom: 0.6rem; }
+        .live-groupe-tete { color: #ddd6fe; font-size: 1.05rem; padding: 0.2rem 0.4rem 0.6rem; }
+        .live-groupe-aide { font-size: 0.9rem; opacity: 0.85; margin-top: 0.15rem; }
+        .lettre { display: inline-flex; align-items: center; justify-content: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: #c4b5fd; color: #2e1065; font-weight: 800; margin-right: 0.4rem; font-size: 0.95rem; }
+        .echauf-series { background: rgba(253,230,138,0.12); border-radius: 0.8rem; padding: 0.55rem 0.75rem; margin-top: 0.6rem; font-size: 0.95rem; color: #fde68a; }
+        .progres-chip { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px; font-weight: 700; font-size: 0.85rem; margin-left: 0.4rem; }
+        .progres-chip.up { background: #bbf7d0; color: #14532d; }
+        .progres-chip.eq { background: #e2e8f0; color: #334155; }
+        .progres-chip.down { background: #fed7aa; color: #7c2d12; }
+        .bilan-compare { margin-top: 0.4rem; font-size: 0.95rem; }
+        .regul-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 0.8rem; }
         /* ===============================================
            THÈME CLAIR "MARINE & OR" (couleurs du logo)
            =============================================== */
@@ -1258,6 +1271,9 @@
         body:not(.mode-sombre) .etir-row { border-bottom-color: var(--line); }
         body:not(.mode-sombre) .btn-danger-link { color: #b91c1c !important; }
         body:not(.mode-sombre) .modal-boite { background: #ffffff; }
+        body:not(.mode-sombre) .live-groupe { border-color: #a78bfa; background: #f5f3ff; }
+        body:not(.mode-sombre) .live-groupe-tete { color: #4c1d95; }
+        body:not(.mode-sombre) .echauf-series { background: #fef3c7; color: #78350f; }
 
 </style>
 </head>
@@ -1269,7 +1285,7 @@
         // Pas de code d'accès : chaque élève garde le même iPad pendant le cycle.
         // ===============================================
 
-        const APP_VERSION = '4.2';   // à garder identique au numéro de sw.js
+        const APP_VERSION = '4.3';   // à garder identique au numéro de sw.js
         const PROFILS_KEY = 'livret-profils';
         const DERNIER_KEY = 'livret-dernier-profil';
 
@@ -1457,7 +1473,7 @@
             1: '😌 Très très facile', 2: '😊 Facile', 3: '🙂 Modéré', 4: '😐 Un peu difficile', 5: '😅 Difficile',
             6: '😓 Plus difficile', 7: '😰 Très difficile', 8: '😵 Extrêmement difficile', 9: '💀 Presque maximal', 10: '🔥 Effort maximal absolu'
         };
-        const kgTxt = (kg) => (kg === null || kg === undefined || kg === '' || parseFloat(kg) === 0) ? 'PDC' : `${kg} kg`;
+        const kgTxt = (kg, nom = null) => (kg === null || kg === undefined || kg === '' || parseFloat(kg) === 0) ? (nom && !estPDC(nom) ? '? kg' : 'PDC') : `${String(kg).replace('.', ',')} kg`;
         const rpeColor = (rpe) => rpe <= 3 ? '#86efac' : rpe <= 6 ? '#fde68a' : rpe <= 8 ? '#fdba74' : '#fca5a5';
 
 
@@ -1892,6 +1908,100 @@
                 {mot: "Courbatures", def: "Douleurs musculaires qui apparaissent 1 à 2 jours après une séance inhabituelle. Elles sont normales et disparaissent en quelques jours."}
             ],
             consignesSecurite: {
+                "Développé Couché (Haltères)": [
+                    "🪑 Assieds-toi avec les haltères sur les cuisses, puis allonge-toi en les gardant contre toi",
+                    "🔒 Omoplates serrées, pieds bien à plat au sol",
+                    "⬇️ Descente lente, coudes un peu rentrés (pas à 90° du corps)",
+                    "🛑 À la fin, ramène les haltères sur les cuisses : ne les lâche jamais sur les côtés"
+                ],
+                "Développé Incliné (Haltères)": [
+                    "🪑 Monte les haltères avec les genoux pour te mettre en place",
+                    "🔒 Omoplates serrées, dos collé au banc",
+                    "⬇️ Descente lente vers le haut des pectoraux",
+                    "🛑 Ne lâche jamais les haltères sur les côtés"
+                ],
+                "Développé Décliné (Barre)": [
+                    "⚠️ TOUJOURS avec un pareur : la barre passe au-dessus du visage",
+                    "🦵 Bloque bien tes jambes sous les boudins avant de commencer",
+                    "👍 Pouces autour de la barre",
+                    "⚖️ Charge plus légère qu'au développé couché pour commencer"
+                ],
+                "Écarté Couché (Haltères)": [
+                    "💪 Coudes légèrement fléchis du début à la fin",
+                    "⬇️ Descends lentement jusqu'à sentir l'étirement, pas plus bas",
+                    "⚖️ Charges légères : c'est un exercice de finition"
+                ],
+                "Rowing Haltères": [
+                    "🔒 Dos plat, une main et un genou en appui sur le banc",
+                    "↩️ Tire le coude vers la hanche, sans tourner le buste",
+                    "⬇️ Redescends lentement, sans laisser tomber l'haltère"
+                ],
+                "Extension Lombaire": [
+                    "🐢 Mouvement lent, sans élan",
+                    "📏 Remonte seulement jusqu'à l'alignement jambes-dos : ne te cambre pas",
+                    "⚖️ Sans charge au début"
+                ],
+                "Développé Militaire (Haltères)": [
+                    "🪑 Assis dos contre le dossier, ou debout en serrant les abdos et les fessiers",
+                    "🔒 Ne te cambre pas en poussant",
+                    "⬇️ Descente contrôlée jusqu'au niveau des oreilles"
+                ],
+                "Élévations Latérales (Haltères)": [
+                    "📏 Monte les bras jusqu'à l'horizontale, pas plus haut",
+                    "🚫 Pas d'élan avec le dos : prends plus léger si tu balances",
+                    "💪 Coudes légèrement fléchis"
+                ],
+                "Shrugs (Barre)": [
+                    "↕️ Monte les épaules vers les oreilles, sans faire de rotation",
+                    "🔒 Bras tendus, dos droit, regard devant",
+                    "⬇️ Redescends lentement"
+                ],
+                "Shrugs (Haltères)": [
+                    "↕️ Monte les épaules vers les oreilles, sans faire de rotation",
+                    "🔒 Bras tendus, dos droit, regard devant",
+                    "⬇️ Redescends lentement"
+                ],
+                "Curl Barre": [
+                    "🔒 Coudes collés au corps, dos droit",
+                    "🚫 Pas d'élan avec le dos ou les hanches",
+                    "⬇️ Redescends lentement jusqu'aux bras tendus"
+                ],
+                "Barre au Front": [
+                    "⚠️ La barre passe au-dessus du visage : commence léger, avec un pareur si possible",
+                    "💪 Coudes fixes, pointés vers le plafond",
+                    "⬇️ Descente lente vers le front (ou derrière la tête)"
+                ],
+                "Squat (Goblet)": [
+                    "🤲 Haltère ou kettlebell tenu contre la poitrine",
+                    "🔒 Dos droit, poitrine sortie, regard devant",
+                    "🦵 Genoux dans l'axe des pieds, talons au sol"
+                ],
+                "Squat (Smith Machine)": [
+                    "🔒 Vérifie que les sécurités de la machine sont réglées juste sous ta position basse",
+                    "🦵 Pieds un peu en avant de la barre, genoux dans l'axe des pieds",
+                    "🔄 Apprends à verrouiller et déverrouiller la barre avant de charger"
+                ],
+                "Fente Bulgare (Haltères)": [
+                    "🦶 Pied arrière posé sur le banc, pied avant assez loin devant",
+                    "🦵 Genou avant dans l'axe du pied, il ne rentre pas vers l'intérieur",
+                    "⚖️ Commence sans charge : l'équilibre est difficile au début"
+                ],
+                "Soulevé de Terre (Trap Bar)": [
+                    "🔒 Dos plat du début à la fin, ne l'arrondis jamais",
+                    "🦵 Pousse dans le sol avec les jambes, la barre monte le long du corps",
+                    "⬇️ Repose la barre en contrôlant, sans la lâcher",
+                    "⚖️ Commence LÉGER pour maîtriser le mouvement"
+                ],
+                "Mollets Debout (Barre)": [
+                    "⚠️ Avec un pareur ou dans un rack avec sécurités",
+                    "🔒 Corps gainé et droit",
+                    "🐢 Mouvement lent, pas de rebond en bas"
+                ],
+                "Crunch": [
+                    "🤲 Mains sur la poitrine ou près des tempes : ne tire pas sur ta nuque",
+                    "↕️ Décolle seulement les épaules, le bas du dos reste au sol",
+                    "🐢 Mouvement lent, souffle en montant"
+                ],
                 "Développé Couché (Barre)": [
                     "⚠️ TOUJOURS avec un pareur à proximité",
                     "👍 Pouces AUTOUR de la barre (jamais la prise pouce sous la barre)",
@@ -2685,8 +2795,16 @@
                                 <div class="field"><label>Récup (s)</label><input class="input" type="number" inputmode="numeric" value="${ex.recup}" onchange="app.majExo(${i}, 'recup', this.value)"></div>
                                 <div class="field"><label>Tempo</label><input class="input" value="${esc(ex.tempo || '')}" placeholder="3-1-1" onchange="app.majExo(${i}, 'tempo', this.value)"></div>
                             </div>
-                            ${rm ? `<div class="muted mt-2" style="font-size: 0.82rem;">🎯 1RM estimé : ${rm} kg</div>` : ''}`}
+                            ${rm ? `<div class="muted mt-2" style="font-size: 0.82rem;">🎯 1RM estimé : ${rm} kg</div>` : ''}
+                            ${this.aideGroupe(ex, i, d)}`}
                     </div>`;
+            }
+
+            aideGroupe(ex, i, d) {
+                if (!['Superset', 'Biset', 'Triset', 'Circuit'].includes(ex.forme)) return '';
+                const g = this.groupes(d.exercicesDetails).find(x => x.idx.includes(i));
+                if (g.forme) return g.idx[0] === i ? `<div class="conseil mt-2">🔗 ${ex.forme} avec ${g.idx.length === 2 ? "l'exercice suivant" : 'les exercices suivants'} : ils s'enchaîneront sans repos.</div>` : '';
+                return `<div class="warn-banner mt-2">Pour faire un ${ex.forme.toLowerCase()}, choisis aussi « ${ex.forme} » sur l'exercice juste en dessous.</div>`;
             }
 
             // ================= SÉANCE EN COURS =================
@@ -2701,9 +2819,10 @@
                 return Array(n).fill(first ? first[0] : '');
             }
 
-            dernierePerf(nom) {
+            dernierePerf(nom, avant = null) {
                 const hist = [...this.sessionHistory].sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
                 for (const h of hist) {
+                    if (avant && new Date(h.completedAt) >= new Date(avant)) continue;
                     const ex = (h.exercices || []).find(e => e.nom === nom);
                     if (ex && ex.series.some(s => s.done)) return { date: h.completedAt, series: ex.series, conseil: ex.conseil };
                 }
@@ -2752,6 +2871,21 @@
 
             quitterLive() { this.switchTab('seances'); }
 
+            // Exercices qui se suivent avec la même forme Superset / Biset / Triset / Circuit = un bloc enchaîné
+            groupes(exs) {
+                const taille = { 'Superset': 2, 'Biset': 2, 'Triset': 3, 'Circuit': 99 };
+                const res = [];
+                let i = 0;
+                while (i < exs.length) {
+                    const f = exs[i].forme, t = taille[f];
+                    let j = i + 1;
+                    if (t) while (j < exs.length && exs[j].forme === f && j - i < t) j++;
+                    res.push({ forme: j - i > 1 ? f : null, idx: Array.from({ length: j - i }, (_, k) => i + k) });
+                    i = j;
+                }
+                return res;
+            }
+
             compterSeries(live) {
                 let faites = 0, total = 0;
                 (live?.exercices || []).forEach(ex => ex.series.forEach(s => { total++; if (s.done) faites++; }));
@@ -2773,7 +2907,7 @@
                     this.live.echauffement.mobilite = true;
                     this.saveLive();
                     this.render();
-                    toast('🔥 Échauffement fait ! Fais 1 série légère sur ton 1er exercice, puis coche la 3e case.');
+                    toast('🔥 Échauffement fait ! Fais tes 2 séries légères, puis coche la 3e case.');
                     return;
                 }
                 this.guide = { i, end: Date.now() + ECHAUFFEMENT_GUIDE[i].s * 1000 };
@@ -2828,8 +2962,18 @@
                     if (this.userMode === 'debutant' && !(e0.cardio && e0.mobilite && e0.series) && this.compterSeries(this.live).faites === 1) {
                         toast('🔥 N\'oublie pas ton échauffement !');
                     }
-                    const derniere = e === this.live.exercices.length - 1 && ex.series.every(x => x.done);
-                    if (!derniere && ex.recup > 0) this.startRest(ex.recup);
+                    const c = this.compterSeries(this.live);
+                    const g = this.groupes(this.live.exercices).find(x => x.idx.includes(e));
+                    const dernierDuGroupe = e === g.idx[g.idx.length - 1];
+                    if (c.faites < c.total) {
+                        if (g.forme && !dernierDuGroupe) {
+                            // Superset / circuit : on enchaîne avec l'exercice suivant
+                            if (g.forme === 'Circuit' && ex.recup > 0 && ex.recup <= 30) this.startRest(ex.recup, 'TRANSITION');
+                            else this.stopRest();
+                            toast(`➡️ Enchaîne : ${this.live.exercices[e + 1].nom}`);
+                        } else if (g.forme === 'Circuit') this.startRest(Math.max(ex.recup, 120), 'REPOS ENTRE 2 TOURS');
+                        else if (ex.recup > 0) this.startRest(ex.recup);
+                    }
                 }
                 this.saveLive();
                 this.render();
@@ -2867,17 +3011,47 @@
                                 <div class="box-title">🔥 Échauffement ${debutant ? 'obligatoire' : ''}</div>
                                 <label><input type="checkbox" ${e0.cardio ? 'checked' : ''} onchange="app.setEchauffement('cardio', this.checked)"> 🏃 Cardio léger (5-10 min) : vélo, tapis, rameur...</label>
                                 <label><input type="checkbox" ${e0.mobilite ? 'checked' : ''} onchange="app.setEchauffement('mobilite', this.checked)"> 🤸 Mobilité articulaire : rotations, étirements dynamiques</label>
-                                <label><input type="checkbox" ${e0.series ? 'checked' : ''} onchange="app.setEchauffement('series', this.checked)"> 💪 Séries d'échauffement : charges très légères</label>
+                                <label><input type="checkbox" ${e0.series ? 'checked' : ''} onchange="app.setEchauffement('series', this.checked)"> 💪 Séries d'échauffement sur ton 1er exercice chargé</label>
+                                ${this.seriesEchauffement(L)}
                                 ${!(e0.cardio && e0.mobilite) ? `<button class="btn btn-primary btn-block mt-2" onclick="app.lancerGuide()">▶ Échauffement guidé (5 min)</button>` : ''}`}
                         </div>
 
-                        ${L.exercices.map((ex, e) => this.renderLiveExo(ex, e)).join('')}
+                        ${this.groupes(L.exercices).map(g => g.forme ? this.renderLiveGroupe(g) : this.renderLiveExo(L.exercices[g.idx[0]], g.idx[0])).join('')}
 
                         <button class="btn btn-success btn-block btn-lg" onclick="app.terminerSeance()">🏁 Terminer la séance</button>
                     </main>`;
             }
 
-            renderLiveExo(ex, e) {
+            // Séries d'échauffement chiffrées : 50 % × 10 puis 75 % × 5 de la charge de travail
+            seriesEchauffement(L) {
+                const ex = L.exercices.find(x => !estPDC(x.nom) && !estTemps(x.nom));
+                if (!ex) return '';
+                const kg = parseFloat(String(ex.series[0]?.kg ?? '').replace(',', '.')) || 0;
+                const pas = /Haltère|Goblet/i.test(ex.nom) ? 1 : 2.5;
+                const arr = (v) => String(Math.max(pas, Math.round(v / pas) * pas)).replace('.', ',');
+                const txt = kg >= 10
+                    ? `<strong>${esc(ex.nom)}</strong> : ${arr(kg * 0.5)} kg × 10, puis ${arr(kg * 0.75)} kg × 5`
+                    : `<strong>${esc(ex.nom)}</strong> : 10 reps très légères, puis 5 reps un peu plus lourdes`;
+                return `<div class="echauf-series">🔸 ${txt}</div>`;
+            }
+
+            renderLiveGroupe(g) {
+                const exs = g.idx.map(i => this.live.exercices[i]);
+                const nbTours = Math.max(...exs.map(x => x.series.length));
+                const tour = Math.min(nbTours, Math.min(...exs.map(x => x.series.filter(s => s.done).length)) + 1);
+                const fini = exs.every(x => x.series.every(s => s.done));
+                const lettres = exs.map((x, k) => String.fromCharCode(65 + k)).join(' → ');
+                const aide = g.forme === 'Circuit'
+                    ? `Fais 1 série de chaque exercice (${lettres}), puis repos et nouveau tour.`
+                    : `Fais ${lettres} sans repos entre les deux, puis récup.`;
+                return `
+                    <div class="live-groupe">
+                        <div class="live-groupe-tete">${g.forme === 'Circuit' ? '🔁' : '🔗'} <strong>${g.forme}</strong>${fini ? ' ✅' : ` • ${g.forme === 'Circuit' ? 'tour' : 'série'} ${tour}/${nbTours}`}<div class="live-groupe-aide">${aide}</div></div>
+                        ${g.idx.map((i, k) => this.renderLiveExo(this.live.exercices[i], i, String.fromCharCode(65 + k))).join('')}
+                    </div>`;
+            }
+
+            renderLiveExo(ex, e, lettre = null) {
                 const debutant = this.userMode === 'debutant';
                 const prev = this.dernierePerf(ex.nom);
                 const consignes = coursData.consignesSecurite[ex.nom];
@@ -2887,14 +3061,15 @@
                 const commence = ex.series.some(s => s.done);
                 const pdc = estPDC(ex.nom), temps = estTemps(ex.nom);
                 const niveau = pdc ? '💪 Poids du corps' : (ex.chargeNiveau ? this.libelleNiveau(ex.chargeNiveau) : '');
-                const cible = `${ex.series.length} × ${esc(ex.repsCible)}${temps ? ' s' : ''} • récup ${ex.recup} s${niveau ? ' • ' + niveau : ''}${ex.tempo && !debutant && !temps ? ' • tempo ' + esc(ex.tempo) : ''}${this.live.type === 'Force Explosive' && !temps ? ' • ⚡ montée explosive' : ''}`;
-                const perf = (x) => temps ? `${x.reps} s` : `${kgTxt(x.kg)} × ${x.reps}`;
+                const recupTxt = lettre ? (this.groupes(this.live.exercices).find(x => x.idx.includes(e)).idx.slice(-1)[0] === e ? (ex.forme === 'Circuit' ? 'puis repos' : `puis récup ${ex.recup} s`) : (ex.forme === 'Circuit' ? 'enchaîne' : 'sans repos')) : `récup ${ex.recup} s`;
+                const cible = `${ex.series.length} × ${esc(ex.repsCible)}${temps ? ' s' : ''} • ${recupTxt}${niveau ? ' • ' + niveau : ''}${ex.tempo && !debutant && !temps ? ' • tempo ' + esc(ex.tempo) : ''}${this.live.type === 'Force Explosive' && !temps ? ' • ⚡ montée explosive' : ''}`;
+                const perf = (x) => temps ? `${x.reps} s` : `${kgTxt(x.kg, ex.nom)} × ${x.reps}`;
                 const conseil = fini ? this.conseilCharge(ex) : null;
                 return `
                     <div class="live-ex ${fini ? 'done' : ''}">
                         <div class="row-between">
                             <div class="grow">
-                                <div class="live-ex-name">${fini ? '✅ ' : ''}${e + 1}. ${esc(ex.nom)}</div>
+                                <div class="live-ex-name">${fini ? '✅ ' : ''}${lettre ? `<span class="lettre">${lettre}</span>` : `${e + 1}. `}${esc(ex.nom)}</div>
                                 <div class="live-cible">${cible}</div>
                             </div>
                             ${video ? `<a class="btn-icon" href="${video}" target="_blank" rel="noopener" style="text-decoration:none;">🎥</a>` : ''}
@@ -3007,8 +3182,8 @@
 
             // ================= MINUTEUR DE REPOS =================
 
-            startRest(sec) {
-                this.rest = { end: Date.now() + sec * 1000, total: sec, active: true };
+            startRest(sec, label = 'REPOS') {
+                this.rest = { end: Date.now() + sec * 1000, total: sec, active: true, label };
                 this.startTicker();
             }
 
@@ -3036,7 +3211,7 @@
                         <div class="rest-progress" id="rest-progress" style="width: ${100 - Math.round(reste / this.rest.total * 100)}%"></div>
                         <button class="btn btn-secondary" onclick="app.ajusterRest(-15)">−15</button>
                         <div style="text-align: center;">
-                            <div class="muted" style="font-size: 0.75rem;">REPOS</div>
+                            <div class="muted" style="font-size: 0.75rem;">${this.rest.label || 'REPOS'}</div>
                             <div class="rest-time" id="rest-time">${this.formatDuree(reste * 1000)}</div>
                         </div>
                         <button class="btn btn-secondary" onclick="app.ajusterRest(15)">+15</button>
@@ -3133,6 +3308,26 @@
                 if (d) d.textContent = RPE_DESCRIPTIONS[rpe] || '';
             }
 
+            // Comparaison avec la dernière fois (charge max, sinon total de reps / secondes)
+            comparer(ex, avant = null) {
+                const prev = this.dernierePerf(ex.nom, avant);
+                if (!prev) return null;
+                const a = ex.series.filter(s => s.done), b = prev.series.filter(s => s.done);
+                if (!a.length || !b.length) return null;
+                const temps = estTemps(ex.nom), f = (v) => String(v).replace('.', ',');
+                if (!estPDC(ex.nom) && !temps) {
+                    const kg = (arr) => Math.max(...arr.map(s => parseFloat(s.kg) || 0));
+                    const d = Math.round((kg(a) - kg(b)) * 2) / 2;
+                    if (d !== 0 && kg(a) > 0 && kg(b) > 0) return d > 0 ? { cls: 'up', txt: `+${f(d)} kg 📈` } : { cls: 'down', txt: `${f(d)} kg` };
+                }
+                const tot = (arr) => arr.reduce((t, s) => t + (parseInt(s.reps) || 0), 0);
+                const d = tot(a) - tot(b);
+                const u = temps ? ' s' : (Math.abs(d) > 1 ? ' reps' : ' rep');
+                if (d > 0) return { cls: 'up', txt: `+${d}${u} 📈` };
+                if (d < 0) return { cls: 'down', txt: `${d}${u}` };
+                return { cls: 'eq', txt: '= pareil' };
+            }
+
             renderBilan() {
                 const L = this.live;
                 if (!L) { this.view = 'main'; return this.renderMain(); }
@@ -3149,8 +3344,8 @@
                         <div class="box">
                             ${L.exercices.map(ex => `
                                 <div class="row-between" style="padding: 0.35rem 0; border-bottom: 1px solid rgba(148,163,184,0.1);">
-                                    <span class="text-white">${ex.series.every(s => s.done) ? '✅' : ex.series.some(s => s.done) ? '🟡' : '⬜'} ${esc(ex.nom)}</span>
-                                    <span class="muted">${ex.series.filter(s => s.done).map(s => estTemps(ex.nom) ? `${s.reps} s` : `${kgTxt(s.kg)} × ${s.reps}`).join(' • ') || '—'}</span>
+                                    <span class="text-white">${ex.series.every(s => s.done) ? '✅' : ex.series.some(s => s.done) ? '🟡' : '⬜'} ${esc(ex.nom)}${(c => c ? `<span class="progres-chip ${c.cls}">${c.txt}</span>` : '')(this.comparer(ex))}</span>
+                                    <span class="muted">${ex.series.filter(s => s.done).map(s => estTemps(ex.nom) ? `${s.reps} s` : `${kgTxt(s.kg, ex.nom)} × ${s.reps}`).join(' • ') || '—'}</span>
                                 </div>`).join('')}
                         </div>
                         <div class="box">
@@ -3205,7 +3400,8 @@
                 const exercices = L.exercices.map(ex => ({
                     nom: ex.nom, muscle: ex.muscle, forme: ex.forme, repsCible: ex.repsCible, chargeNiveau: ex.chargeNiveau,
                     series: ex.series.map(s => ({ kg: s.kg === '' || s.kg === null ? null : parseFloat(s.kg), reps: parseInt(s.reps) || 0, done: !!s.done })),
-                    conseil: this.conseilCharge(ex)
+                    conseil: this.conseilCharge(ex),
+                    evolution: (this.comparer(ex) || {}).txt || null
                 }));
                 const exFinis = exercices.filter(ex => ex.series.every(s => s.done)).length;
                 const entry = {
@@ -3252,7 +3448,12 @@
                         <div class="text-white">Aucune séance effectuée</div>
                         <div class="muted">Tes séances terminées apparaîtront ici</div>
                     </div>`;
-                return hist.map(h => {
+                const boutonCycle = hist.length >= 2 ? `
+                    <div class="box row-between wrap" style="gap: 0.6rem;">
+                        <div><div class="text-white" style="font-weight: 700;">📊 Mon bilan de cycle</div><div class="muted">${hist.length} séances, ma progression et mes ressentis</div></div>
+                        <button class="btn btn-success" onclick="app.exportBilanCycle()">📤 Envoyer</button>
+                    </div>` : '';
+                return boutonCycle + hist.map(h => {
                     const ouvert = this.openHistory === h.id;
                     const r = RESSENTIS.find(x => x.id === h.ressenti);
                     const ressenti = r ? `<span class="pill" style="background:${r.color}">${r.emo} ${r.label}</span>` : (h.rpe ? `<span class="pill" style="background:${rpeColor(h.rpe)}">RPE ${h.rpe}/10</span>` : '');
@@ -3271,8 +3472,8 @@
                                     ${h.type ? `<div class="mb-2"><span class="badge-obj">${esc(this.getMobileLabel(h.type))}</span> ${h.echauffement === false ? '<span class="tag">⚠️ échauffement non coché</span>' : ''}${h.retourCalme ? '<span class="tag">🧘 retour au calme</span>' : ''}</div>` : ''}
                                     ${(h.exercices || []).map(ex => `
                                         <div style="padding: 0.3rem 0;">
-                                            <div class="text-white" style="font-weight: 600;">${esc(ex.nom)}</div>
-                                            <div class="muted">${ex.series.map(s => s.done ? (estTemps(ex.nom) ? `${s.reps} s` : `${kgTxt(s.kg)} × ${s.reps}`) : '<span style="opacity:0.5">non faite</span>').join(' • ')}</div>
+                                            <div class="text-white" style="font-weight: 600;">${esc(ex.nom)}${ex.evolution ? `<span class="progres-chip ${/^\+/.test(ex.evolution) ? 'up' : /^-/.test(ex.evolution) ? 'down' : 'eq'}">${ex.evolution}</span>` : ''}</div>
+                                            <div class="muted">${ex.series.map(s => s.done ? (estTemps(ex.nom) ? `${s.reps} s` : `${kgTxt(s.kg, ex.nom)} × ${s.reps}`) : '<span style="opacity:0.5">non faite</span>').join(' • ')}</div>
                                             ${ex.conseil ? `<div class="conseil" style="margin-top:0.3rem;">💡 ${ex.conseil}</div>` : ''}
                                         </div>`).join('')}
                                     ${h.notes ? `<div class="mt-2 text-white" style="font-style: italic; opacity: 0.9;">💬 « ${esc(h.notes)} »</div>` : ''}
@@ -3311,10 +3512,11 @@
                     if (y > 265) { doc.addPage(); y = 20; }
                     doc.setFontSize(12); doc.setTextColor(15, 23, 42);
                     doc.text(`${i + 1}. ${ex.nom}`, 20, y);
+                    if (ex.evolution) { doc.setFontSize(10); doc.setTextColor(/^\+/.test(ex.evolution) ? 22 : 120, /^\+/.test(ex.evolution) ? 130 : 110, /^\+/.test(ex.evolution) ? 60 : 100); doc.text('vs dernière fois : ' + ex.evolution.replace(/[^\x20-\xFF]/g, '').trim(), 190, y, { align: 'right' }); }
                     doc.setFontSize(9); doc.setTextColor(6, 150, 180);
                     doc.text(`${ex.muscle || ''}${ex.repsCible ? '  -  cible : ' + ex.repsCible + ' reps' : ''}${ex.chargeNiveau ? '  -  ' + ex.chargeNiveau : ''}`, 25, y + 5);
                     y += 11; doc.setFontSize(10); doc.setTextColor(60, 70, 90);
-                    const txt = ex.series.map((s, k) => `S${k + 1} : ${s.done ? (estTemps(ex.nom) ? s.reps + ' s' : kgTxt(s.kg) + ' x ' + s.reps) : 'non faite'}`).join('    ');
+                    const txt = ex.series.map((s, k) => `S${k + 1} : ${s.done ? (estTemps(ex.nom) ? s.reps + ' s' : kgTxt(s.kg, ex.nom) + ' x ' + s.reps) : 'non faite'}`).join('    ');
                     doc.splitTextToSize(txt, 165).forEach(line => { doc.text(line, 25, y); y += 5; });
                     if (ex.conseil) { doc.setTextColor(180, 120, 0); doc.splitTextToSize('Prochaine fois : ' + ex.conseil.replace(/👍/g, ''), 165).forEach(line => { doc.text(line, 25, y); y += 5; }); doc.setTextColor(60, 70, 90); }
                     y += 4;
@@ -3330,6 +3532,73 @@
                 const nomFichier = `bilan_${this.nomFichierEleve()}_${date.replace(/\//g, '-')}.pdf`;
                 if (envoyer) this.partagerFichier(doc.output('blob'), nomFichier, 'application/pdf', `Bilan de séance - ${this.currentUser}`);
                 else doc.save(nomFichier);
+            }
+
+            // Bilan de cycle : une synthèse PDF que l'élève envoie au professeur
+            exportBilanCycle() {
+                const r = this.regularite();
+                if (!r) return;
+                if (typeof window.jspdf === 'undefined') { toast('⚠️ Module PDF non chargé', 'error'); return; }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const propre = (t) => String(t || '').replace(/[^\x20-\xFF\n]/g, '').replace(/\s+/g, ' ').trim();
+                const d = (x) => new Date(x).toLocaleDateString('fr-FR');
+                let y = 20;
+                const saut = (h) => { if (y + h > 280) { doc.addPage(); y = 20; } };
+                const titre = (t) => { saut(16); y += 4; doc.setFontSize(13); doc.setTextColor(19, 40, 77); doc.text(t, 20, y); y += 2; doc.setDrawColor(245, 184, 46); doc.setLineWidth(0.8); doc.line(20, y, 190, y); y += 7; };
+                doc.setFontSize(20); doc.setTextColor(19, 40, 77);
+                doc.text('Bilan de cycle - Musculation', 105, y, { align: 'center' });
+                y += 9; doc.setFontSize(14); doc.setTextColor(15, 23, 42);
+                doc.text(propre(this.currentUser), 105, y, { align: 'center' });
+                y += 7; doc.setFontSize(10); doc.setTextColor(100, 116, 139);
+                doc.text(`Du ${d(r.hist[0].completedAt)} au ${d(r.hist[r.hist.length - 1].completedAt)}`, 105, y, { align: 'center' });
+                y += 6;
+                titre('Régularité');
+                doc.setFontSize(10); doc.setTextColor(60, 70, 90);
+                doc.text(`Séances : ${r.nb}    Par semaine : ${r.parSemaine}    Total soulevé : ${r.total} kg    Échauffement fait : ${r.echauf}/${r.nb}`, 20, y); y += 4;
+
+                titre('Mes séances');
+                doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+                doc.text('Date', 20, y); doc.text('Séance', 42, y); doc.text('Objectif', 100, y); doc.text('Séries', 145, y); doc.text('Ressenti', 165, y); y += 5;
+                doc.setTextColor(40, 50, 70);
+                r.hist.forEach(h => {
+                    saut(6);
+                    const res = RESSENTIS.find(x => x.id === h.ressenti);
+                    doc.text(d(h.completedAt).slice(0, 5), 20, y);
+                    doc.text(doc.splitTextToSize(propre(h.sessionName || 'Séance'), 55)[0], 42, y);
+                    doc.text(doc.splitTextToSize(propre(h.type ? this.getMobileLabel(h.type) : '-'), 42)[0], 100, y);
+                    doc.text(h.seriesTotal ? `${h.seriesFaites}/${h.seriesTotal}` : '-', 145, y);
+                    doc.text(res ? propre(res.label) : (h.rpe ? `RPE ${h.rpe}` : '-'), 165, y);
+                    y += 5.5;
+                });
+
+                titre('Ma progression par exercice');
+                doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+                doc.text('Exercice', 20, y); doc.text('Séances', 100, y); doc.text('1re séance', 120, y); doc.text('Dernière', 147, y); doc.text('Record', 172, y); y += 5;
+                doc.setTextColor(40, 50, 70);
+                this.statsExercices().forEach(s => {
+                    saut(6);
+                    const pdc = s.points.every(p => !p.kg);
+                    const v = (p) => pdc ? `${p.reps} ${estTemps(s.nom) ? 's' : 'reps'}` : `${kgTxt(p.kg)}`;
+                    const p0 = s.points[0], p1 = s.points[s.points.length - 1];
+                    doc.text(doc.splitTextToSize(propre(s.nom), 78)[0], 20, y);
+                    doc.text(String(s.points.length), 100, y);
+                    doc.text(v(p0), 120, y);
+                    doc.text(v(p1), 147, y);
+                    doc.text(pdc ? v({ reps: Math.max(...s.points.map(p => p.reps)) }) : `${kgTxt(s.bestKg)} x ${s.bestReps}`, 172, y);
+                    y += 5.5;
+                });
+
+                const notes = r.hist.filter(h => h.notes);
+                if (notes.length) {
+                    titre('Mes remarques');
+                    doc.setFontSize(9); doc.setTextColor(60, 70, 90);
+                    notes.forEach(h => doc.splitTextToSize(`${d(h.completedAt).slice(0, 5)} : ${propre(h.notes)}`, 170).forEach(l => { saut(5); doc.text(l, 20, y); y += 5; }));
+                }
+                doc.setFontSize(8); doc.setTextColor(100, 116, 139);
+                doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} - Musculation EPS`, 105, 290, { align: 'center' });
+                const nom = `bilan-cycle_${this.nomFichierEleve()}_${new Date().toISOString().split('T')[0]}.pdf`;
+                this.partagerFichier(doc.output('blob'), nom, 'application/pdf', `Bilan de cycle - ${this.currentUser}`);
             }
 
             // ================= PROGRÈS =================
@@ -3372,7 +3641,7 @@
                         <div class="text-white">Pas encore de données</div>
                         <div class="muted">Fais ta première séance : tes charges apparaîtront ici</div>
                     </div>`;
-                return tabs + stats.map((s, i) => `
+                return tabs + this.renderRegularite() + stats.map((s, i) => `
                     <div class="box">
                         <div class="row-between wrap">
                             <div>
@@ -3388,6 +3657,35 @@
                     </div>`).join('');
             }
 
+            regularite() {
+                const hist = [...this.sessionHistory].sort((a, b) => new Date(a.completedAt) - new Date(b.completedAt));
+                if (!hist.length) return null;
+                const jours = (new Date(hist[hist.length - 1].completedAt) - new Date(hist[0].completedAt)) / 86400000;
+                const semaines = Math.max(1, Math.ceil((jours + 1) / 7));
+                return {
+                    hist, nb: hist.length,
+                    parSemaine: String(Math.round(hist.length / semaines * 10) / 10).replace('.', ','),
+                    total: hist.reduce((t, h) => t + (h.tonnage || 0), 0),
+                    echauf: hist.filter(h => h.echauffement).length
+                };
+            }
+
+            renderRegularite() {
+                const r = this.regularite();
+                if (!r) return '';
+                const kg = r.total >= 1000 ? String(Math.round(r.total / 100) / 10).replace('.', ',') + ' t' : r.total + ' kg';
+                return `
+                    <div class="box">
+                        <div class="box-title">📅 Ma régularité</div>
+                        <div class="regul-grid">
+                            <div class="stat"><div class="stat-val">${r.nb}</div><div class="stat-lbl">séance${r.nb > 1 ? 's' : ''}</div></div>
+                            <div class="stat"><div class="stat-val">${r.parSemaine}</div><div class="stat-lbl">par semaine</div></div>
+                            <div class="stat"><div class="stat-val">${kg}</div><div class="stat-lbl">soulevés au total</div></div>
+                        </div>
+                        ${r.nb >= 2 ? `<div class="muted" style="font-size: 0.85rem;">Kilos soulevés à chaque séance</div><canvas id="regul-chart" height="90"></canvas>` : ''}
+                    </div>`;
+            }
+
             initProgressCharts() {
                 if (typeof Chart === 'undefined') return;
                 const avance = this.userMode === 'avance';
@@ -3395,6 +3693,18 @@
                 const coul = sombre
                     ? { l1: '#7dd3fc', f1: 'rgba(125,211,252,0.15)', l2: '#fdba74', pdc: '#86efac', fpdc: 'rgba(134,239,172,0.15)', txt: '#e2e8f0', grid: 'rgba(255,255,255,0.08)' }
                     : { l1: '#1e3a8a', f1: 'rgba(30,58,138,0.10)', l2: '#f59e0b', pdc: '#16a34a', fpdc: 'rgba(22,163,74,0.10)', txt: '#334155', grid: 'rgba(19,40,77,0.08)' };
+                const rc = document.getElementById('regul-chart');
+                const reg = this.regularite();
+                if (rc && reg) {
+                    const derniers = reg.hist.slice(-12);
+                    this.charts.push(new Chart(rc, {
+                        type: 'bar',
+                        data: { labels: derniers.map(h => new Date(h.completedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })),
+                            datasets: [{ label: 'kg soulevés', data: derniers.map(h => h.tonnage || 0), backgroundColor: sombre ? '#c4b5fd' : '#a5b4fc', borderRadius: 6 }] },
+                        options: { responsive: true, maintainAspectRatio: true, aspectRatio: 3.5, animation: false, plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true, ticks: { color: coul.txt }, grid: { color: coul.grid } }, x: { ticks: { color: coul.txt }, grid: { display: false } } } }
+                    }));
+                }
                 this.statsExercices().forEach((s, i) => {
                     const canvas = document.getElementById(`prog-chart-${i}`);
                     if (!canvas) return;
@@ -3635,16 +3945,11 @@
 
             formatCharge(exercice) {
                 // Formater l'affichage de la charge selon le mode et les données
-                if (exercice.chargeNiveau) {
-                    // Mode débutant avec niveau
-                    return exercice.chargeNiveau;
-                } else if (exercice.chargeReelle) {
-                    // Mode avancé avec kg
-                    return exercice.chargeReelle + 'kg';
-                } else {
-                    // Poids de corps par défaut
-                    return 'PDC';
-                }
+                if (estPDC(exercice.nom) || exercice.chargeNiveau === 'PDC') return 'Poids du corps';
+                if (exercice.chargeReelle) return String(exercice.chargeReelle).replace('.', ',') + ' kg';
+                if (exercice.chargeTheo) return String(exercice.chargeTheo).replace('.', ',') + ' kg';
+                if (exercice.chargeNiveau) return 'Charge ' + exercice.chargeNiveau.toLowerCase();
+                return 'Charge à choisir';
             }
 
             renderRMTab() {
@@ -4381,10 +4686,10 @@
 ${exercicesDetails.map((ex, i) => 
                     `${i + 1}. ${ex.nom}
    💪 ${ex.muscle}
-   ${ex.series}×${ex.reps} • ${this.formatCharge(ex)} • ${ex.recup}s repos`
+   ${ex.series} × ${ex.reps}${estTemps(ex.nom) ? ' s' : ''} • ${this.formatCharge(ex)} • ${ex.recup} s de repos${['Superset', 'Biset', 'Triset', 'Circuit'].includes(ex.forme) ? ' • ' + ex.forme : ''}`
                 ).join('\n\n')}
 
-📱 Généré par Livret Musculation`;
+📱 Musculation EPS`;
                 
                 // Vérifier si l'API Web Share est disponible
                 if (navigator.share) {
