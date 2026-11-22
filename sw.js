@@ -1,5 +1,5 @@
 // ⚠️ Change ce numéro à chaque mise en ligne pour que les iPad récupèrent la nouvelle version
-const CACHE_NAME = 'musculation-v4.0';
+const CACHE_NAME = 'musculation-v4.1';
 
 const urlsToCache = [
   './',

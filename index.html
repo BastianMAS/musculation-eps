@@ -985,7 +985,7 @@
         button, input, select, textarea { font-family: inherit; }
         input, select, textarea { font-size: 16px; }
 
-        .page { max-width: 900px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+        .page { max-width: 960px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
         .page-live { padding-bottom: calc(150px + env(safe-area-inset-bottom)); }
 
         .topbar {
@@ -1133,6 +1133,27 @@
             .ressenti-grid { grid-template-columns: repeat(2, 1fr); }
             .rpe-grid { grid-template-columns: repeat(5, 1fr); }
         }
+
+        /* ---- V4.1 : lisibilité, zones tactiles, nouveaux éléments ---- */
+        .nav-btn { font-size: 0.85rem; }
+        .stat-lbl { font-size: 0.85rem; }
+        .sets th { font-size: 0.8rem; }
+        .sub-tab-btn, .muscle-chip, .filter-chip, .obj-chip, .btn-icon, .btn-link, .tab-btn { min-height: 44px; }
+        .btn-icon { min-width: 44px; }
+        .conseil { margin-top: 0.6rem; padding: 0.6rem 0.85rem; border-radius: 0.75rem; background: rgba(253, 224, 71, 0.14); border: 1px solid rgba(253, 224, 71, 0.45); color: #fde68a; font-size: 0.92rem; font-weight: 600; }
+        .pdc-cell { display: inline-block; padding: 0.55rem 0.8rem; border-radius: 0.6rem; background: rgba(148,163,184,0.15); color: #cbd5e1; font-weight: 700; font-size: 0.95rem; }
+        .chrono-btn { min-width: 6rem; min-height: 44px; padding: 0.5rem 0.8rem; border-radius: 0.7rem; border: 2px solid var(--primary-color); background: transparent; color: var(--text-cyan); font-weight: 800; font-size: 1.05rem; cursor: pointer; }
+        .chrono-btn.on { background: var(--primary-color); color: #fff; }
+        .chrono-btn.fait, .chrono-btn:disabled { border-color: #86efac; color: #16a34a; opacity: 0.85; }
+        .guide { text-align: center; padding: 0.5rem 0; }
+        .guide-titre { font-size: 1.5rem; font-weight: 800; margin-top: 0.4rem; color: #f1f5f9; }
+        .guide-texte { font-size: 1.05rem; margin: 0.4rem 0 0.6rem; color: #cbd5e1; }
+        .guide-time { font-family: 'Courier New', monospace; font-size: 3rem; font-weight: 800; color: var(--text-cyan); margin-bottom: 0.6rem; }
+        .etir-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 0; border-bottom: 1px solid rgba(148,163,184,0.15); }
+        .etir-row:last-child { border-bottom: none; }
+        body:has(#rest-bar) .toast { bottom: calc(110px + env(safe-area-inset-bottom)); }
+        .echauf label { min-height: 44px; }
+        .btn-danger-link { color: #fca5a5 !important; }
         /* ===============================================
            THÈME CLAIR "MARINE & OR" (couleurs du logo)
            =============================================== */
@@ -1150,7 +1171,7 @@
         body:not(.mode-sombre) .topbar-title { color: #13284d; }
         body:not(.mode-sombre) .chip-user { background: #eef2f9; color: #13284d; }
         body:not(.mode-sombre) .bottom-nav { background: rgba(255,255,255,0.97); border-top: 1px solid var(--line); box-shadow: 0 -4px 20px rgba(19,40,77,0.06); }
-        body:not(.mode-sombre) .nav-btn { color: #94a3b8; }
+        body:not(.mode-sombre) .nav-btn { color: #64748b; }
         body:not(.mode-sombre) .nav-btn.active { color: #13284d; }
         body:not(.mode-sombre) .nav-btn.active .nav-ico { filter: none; }
         body:not(.mode-sombre) .card, body:not(.mode-sombre) .box, body:not(.mode-sombre) .seance-card, body:not(.mode-sombre) .stat, body:not(.mode-sombre) .live-ex, body:not(.mode-sombre) .hist-card, body:not(.mode-sombre) .exercise-card, body:not(.mode-sombre) .muscle-info-card, body:not(.mode-sombre) .rm-history-card, body:not(.mode-sombre) .session-card, body:not(.mode-sombre) .charges-calculator, body:not(.mode-sombre) .timer-container, body:not(.mode-sombre) .search-container {
@@ -1223,6 +1244,16 @@
         body:not(.mode-sombre) .exercise-card h4[style*="color"] { filter: saturate(1.1) brightness(0.85); }
         body:not(.mode-sombre) .sticky-actions { background: linear-gradient(to top, #f8fafc 70%, rgba(248,250,252,0)) !important; }
         body:not(.mode-sombre) .resume-banner .muted { color: #475569 !important; }
+        body:not(.mode-sombre) .conseil { background: #fef9e7 !important; border-color: #f5b82e !important; color: #7c4a03 !important; }
+        body:not(.mode-sombre) .pdc-cell { background: #eef2f9; color: #13284d; }
+        body:not(.mode-sombre) .chrono-btn { border-color: #1e3a8a; color: #1e3a8a; }
+        body:not(.mode-sombre) .chrono-btn.on { background: #13284d; color: #fde68a; }
+        body:not(.mode-sombre) .chrono-btn.fait, body:not(.mode-sombre) .chrono-btn:disabled { border-color: #22c55e; color: #15803d; }
+        body:not(.mode-sombre) .guide-titre { color: #13284d; }
+        body:not(.mode-sombre) .guide-texte { color: #334155; }
+        body:not(.mode-sombre) .guide-time { color: #13284d; }
+        body:not(.mode-sombre) .etir-row { border-bottom-color: var(--line); }
+        body:not(.mode-sombre) .btn-danger-link { color: #b91c1c !important; }
 
 </style>
 </head>
@@ -1234,7 +1265,7 @@
         // Pas de code d'accès : chaque élève garde le même iPad pendant le cycle.
         // ===============================================
 
-        const APP_VERSION = '4.0';   // à garder identique au numéro de sw.js
+        const APP_VERSION = '4.1';   // à garder identique au numéro de sw.js
         const PROFILS_KEY = 'livret-profils';
         const DERNIER_KEY = 'livret-dernier-profil';
 
@@ -1377,6 +1408,40 @@
             }
             return null;
         }
+
+
+        // Exercices au poids du corps (pas de kg) et exercices chronométrés (secondes)
+        const EXOS_PDC = new Set(['Pompes', 'Dips', 'Traction (Pronation)', 'Traction (Supination)', 'Extension Lombaire',
+            'Gainage Planche', 'Gainage Latéral', 'Gainage Latéral Dynamique', 'Dead Bug', 'Bird Dog', 'Crunch',
+            'Crunch Bicyclette (Obliques)', 'Circuit Abdos 1 (45s/15s)', 'Circuit Abdos 2 (45s/15s)']);
+        const EXOS_TEMPS = new Set(['Gainage Planche', 'Gainage Latéral', 'Circuit Abdos 1 (45s/15s)', 'Circuit Abdos 2 (45s/15s)']);
+        const estPDC = (nom) => EXOS_PDC.has(nom);
+        const estTemps = (nom) => EXOS_TEMPS.has(nom);
+
+        // Échauffement guidé (5 min)
+        const ECHAUFFEMENT_GUIDE = [
+            { t: '🏃 Cardio léger', d: 'Vélo, rameur ou course sur place, à un rythme facile.', s: 120 },
+            { t: '🙆 Épaules', d: 'Grands cercles de bras vers l\'avant, puis vers l\'arrière.', s: 45 },
+            { t: '🦵 Hanches et genoux', d: 'Rotations de hanches, puis 10 squats lents au poids du corps.', s: 60 },
+            { t: '🤸 Fentes dynamiques', d: 'Fentes avant en alternant les jambes, buste droit.', s: 45 },
+            { t: '💪 Activation', d: '10 pompes inclinées (mains sur un banc) et 10 rotations du buste.', s: 30 }
+        ];
+
+        // Retour au calme : un étirement doux par groupe musculaire travaillé (30 s, sans douleur)
+        const ETIREMENTS = {
+            'Pectoraux': 'Avant-bras contre un mur, coude à hauteur d\'épaule : tourne doucement le buste vers l\'opposé.',
+            'Dorsaux': 'Mains sur un banc, recule les hanches, dos long, tête entre les bras.',
+            'Deltoïdes': 'Bras tendu devant la poitrine, ramène-le vers toi avec l\'autre main.',
+            'Trapèzes': 'Incline doucement la tête sur le côté, l\'épaule opposée relâchée vers le bas.',
+            'Biceps': 'Bras tendu derrière toi, main à plat contre un mur, tourne doucement le buste.',
+            'Triceps': 'Main derrière la tête dans le dos, l\'autre main pousse doucement le coude.',
+            'Abdominaux': 'Allongé sur le ventre, pousse sur les mains pour relever le buste, hanches au sol.',
+            'Quadriceps': 'Debout, attrape ta cheville et ramène le talon vers les fesses, genoux serrés.',
+            'Ischio-jambiers': 'Talon posé sur un banc bas, jambe tendue : penche le buste en avant, dos droit.',
+            'Fessiers': 'Allongé sur le dos, cheville posée sur le genou opposé : tire la cuisse vers toi.',
+            'Mollets': 'Mains contre un mur, jambe arrière tendue, talon bien au sol.',
+            'Adducteurs': 'Assis, plantes des pieds collées : pousse doucement les genoux vers le sol.'
+        };
 
         const RESSENTIS = [
             { id: 'facile', emo: '😊', label: 'Facile', rpe: 3, color: '#86efac' },
@@ -1800,6 +1865,28 @@
             ],
 
             // CONSIGNES DE SÉCURITÉ PAR EXERCICE
+            lexique: [
+                {mot: "Répétition (rep)", def: "Un mouvement complet : par exemple descendre puis remonter une fois au squat.", ex: "10 reps = 10 mouvements à la suite"},
+                {mot: "Série", def: "Un groupe de répétitions faites sans s'arrêter.", ex: "3 séries de 10 reps"},
+                {mot: "Récupération (récup)", def: "Le temps de repos entre deux séries. Il dépend de l'objectif.", ex: "Récup 90 s"},
+                {mot: "Charge", def: "Le poids que tu soulèves (barre, haltères, machine)."},
+                {mot: "PDC (poids du corps)", def: "Exercice sans charge ajoutée : ton corps sert de charge.", ex: "Pompes, gainage, tractions"},
+                {mot: "1RM (répétition maximale)", def: "La charge la plus lourde que tu pourrais soulever une seule fois. En EPS, on ne la teste jamais : on l'estime à partir d'une série de 5 à 10 répétitions."},
+                {mot: "% du 1RM", def: "Une part de ton 1RM, pour choisir la bonne charge selon l'objectif.", ex: "1RM estimé 40 kg → 75 % = 30 kg"},
+                {mot: "Mobile (objectif)", def: "Ce que tu veux développer : tonification, volume (hypertrophie), puissance… Il fixe la charge, les reps et la récup."},
+                {mot: "Forme de travail", def: "La façon d'organiser les séries.", ex: "Séries droites, pyramide, circuit"},
+                {mot: "Tempo", def: "La vitesse du mouvement, en secondes : descente - pause - montée - pause.", ex: "3-1-1-0 = 3 s pour descendre, 1 s de pause, 1 s pour monter"},
+                {mot: "Amplitude", def: "La longueur du mouvement, du point de départ au point d'arrivée. Une amplitude complète et contrôlée rend l'exercice plus efficace."},
+                {mot: "Concentrique / excentrique", def: "Concentrique : le muscle se raccourcit (on pousse ou on tire). Excentrique : il s'allonge en freinant (on retient la charge)."},
+                {mot: "Isométrique (gainage)", def: "Le muscle travaille sans bouger : on tient une position.", ex: "Gainage planche 30 s"},
+                {mot: "Échauffement", def: "5 à 10 minutes pour préparer le cœur, les articulations et les muscles avant l'effort. Obligatoire avant de soulever."},
+                {mot: "Retour au calme", def: "Quelques minutes en fin de séance pour faire redescendre le cœur et s'étirer doucement."},
+                {mot: "Pareur", def: "Le camarade qui sécurise l'exercice et peut aider à reposer la barre si besoin."},
+                {mot: "Ressenti (RPE)", def: "La difficulté que tu as perçue pendant l'effort, de facile à très difficile (ou de 1 à 10)."},
+                {mot: "Tonnage (kg soulevés)", def: "Le total soulevé pendant la séance : charge × répétitions, additionné pour toutes les séries."},
+                {mot: "Surcharge progressive", def: "Augmenter petit à petit la difficulté (reps ou charge) pour continuer à progresser."},
+                {mot: "Courbatures", def: "Douleurs musculaires qui apparaissent 1 à 2 jours après une séance inhabituelle. Elles sont normales et disparaissent en quelques jours."}
+            ],
             consignesSecurite: {
                 "Développé Couché (Barre)": [
                     "⚠️ TOUJOURS avec un pareur à proximité",
@@ -1913,6 +2000,9 @@
                 this.charts = [];
                 this.openHistory = null;
                 this.voirArchives = false;
+                this.chrono = null;   // chrono d'une série de gainage
+                this.guide = null;    // échauffement guidé
+                this.etir = null;     // étirement en cours (retour au calme)
                 this.audioContext = null;
                 this.audioUnlocked = false;
 
@@ -2314,7 +2404,14 @@
             }
 
             // Paramètres par défaut d'un exercice selon l'objectif (repris des réglages débutant / tableau mobiles × formes)
-            defautsExercice(mobile, forme) {
+            defautsExercice(mobile, forme, nom) {
+                const d = this.defautsBase(mobile, forme);
+                if (nom && estPDC(nom)) { d.chargeNiveau = 'PDC'; d.chargeTheo = null; }
+                if (nom && estTemps(nom)) d.reps = /Circuit/.test(nom) ? '45' : ({ 'Endurance Musculaire': '40', 'Force Explosive': '20' }[mobile] || '30');
+                return d;
+            }
+
+            defautsBase(mobile, forme) {
                 if (this.userMode === 'debutant') {
                     const formes = this.formesPour(mobile);
                     return {
@@ -2400,9 +2497,10 @@
                 this.draft.type = mobile;
                 // On réapplique les paramètres du nouvel objectif à tous les exercices
                 this.draft.exercicesDetails = this.draft.exercicesDetails.map(ex => {
-                    const d = this.defautsExercice(mobile, ex.forme);
+                    const d = this.defautsExercice(mobile, ex.forme, ex.nom);
                     const n = { ...ex, ...d };
-                    if (this.userMode === 'avance') { n.chargeTheo = this.chargeConseillee(ex.nom, d.intensite) || ex.chargeTheo || null; }
+                    if (this.userMode === 'avance' && !estPDC(ex.nom)) { n.chargeTheo = this.chargeConseillee(ex.nom, d.intensite) || ex.chargeTheo || null; }
+                    delete n.intensite;
                     return n;
                 });
                 this.saveDraft();
@@ -2425,9 +2523,9 @@
             }
 
             ajouterExoNom(nom) {
-                const d = this.defautsExercice(this.draft.type);
+                const d = this.defautsExercice(this.draft.type, null, nom);
                 const ex = { muscle: this.pickerMuscle || '', nom, ...d, chargeTheo: null, chargeReelle: null, completed: false };
-                if (this.userMode === 'avance') ex.chargeTheo = this.chargeConseillee(nom, d.intensite);
+                if (this.userMode === 'avance' && !estPDC(nom)) ex.chargeTheo = this.chargeConseillee(nom, d.intensite);
                 delete ex.intensite;
                 this.draft.exercicesDetails.push(ex);
                 this.saveDraft();
@@ -2442,7 +2540,7 @@
                 else if (champ === 'recup') ex.recup = Math.max(0, parseInt(valeur) || 0);
                 else if (champ === 'chargeTheo' || champ === 'chargeReelle') ex[champ] = parseFloat(valeur) || null;
                 else if (champ === 'forme') {
-                    const d = this.defautsExercice(this.draft.type, valeur);
+                    const d = this.defautsExercice(this.draft.type, valeur, ex.nom);
                     Object.assign(ex, { forme: d.forme, series: d.series, reps: d.reps, recup: d.recup, tempo: d.tempo });
                 } else ex[champ] = valeur;
                 this.saveDraft();
@@ -2543,7 +2641,9 @@
             renderExoEdit(ex, i, d) {
                 const debutant = this.userMode === 'debutant';
                 const formes = this.formesPour(d.type);
-                const rm = !debutant ? this.meilleur1RM(ex.nom) : 0;
+                const pdc = estPDC(ex.nom), temps = estTemps(ex.nom);
+                const rm = !debutant && !pdc ? this.meilleur1RM(ex.nom) : 0;
+                const unite = temps ? 's' : 'reps';
                 return `
                     <div class="ex-edit">
                         <div class="row-between">
@@ -2556,8 +2656,8 @@
                             <button class="btn-icon" onclick="app.retirerExo(${i})">🗑️</button>
                         </div>
                         ${debutant ? `
-                            <div class="locked">🔒 ${ex.series} séries × ${esc(ex.reps)} reps • récup ${ex.recup} s${d.type === 'Force Explosive' ? ' • montée explosive' : ''}${this.niveauxPour(d.type).length === 1 ? ' • ' + this.libelleNiveau(ex.chargeNiveau) : ''}</div>
-                            ${this.niveauxPour(d.type).length === 1 ? '' : `<div class="fields">
+                            <div class="locked">🔒 ${ex.series} séries × ${esc(ex.reps)} ${unite} • récup ${ex.recup} s${d.type === 'Force Explosive' && !temps ? ' • montée explosive' : ''}${pdc ? ' • 💪 Poids du corps' : (this.niveauxPour(d.type).length === 1 ? ' • ' + this.libelleNiveau(ex.chargeNiveau) : '')}</div>
+                            ${pdc || this.niveauxPour(d.type).length === 1 ? '' : `<div class="fields">
                                 <div class="field" style="grid-column: 1 / -1; max-width: 320px;">
                                     <label>Niveau de charge</label>
                                     <select class="input" onchange="app.majExo(${i}, 'chargeNiveau', this.value)">
@@ -2576,8 +2676,8 @@
                                     <label>Séries</label>
                                     <div class="stepper"><button onclick="app.majExo(${i}, 'series', -1)">−</button><span>${ex.series}</span><button onclick="app.majExo(${i}, 'series', 1)">+</button></div>
                                 </div>
-                                <div class="field"><label>Reps</label><input class="input" value="${esc(ex.reps)}" onchange="app.majExo(${i}, 'reps', this.value)"></div>
-                                <div class="field"><label>Charge (kg)</label><input class="input" type="number" step="0.5" inputmode="decimal" value="${ex.chargeTheo ?? ''}" placeholder="kg" onchange="app.majExo(${i}, 'chargeTheo', this.value)"></div>
+                                <div class="field"><label>${temps ? 'Durée (s)' : 'Reps'}</label><input class="input" value="${esc(ex.reps)}" onchange="app.majExo(${i}, 'reps', this.value)"></div>
+                                ${pdc ? `<div class="field"><label>Charge</label><div class="locked" style="margin-top:0.55rem;">💪 Poids du corps</div></div>` : `<div class="field"><label>Charge (kg)</label><input class="input" type="number" step="0.5" inputmode="decimal" value="${ex.chargeTheo ?? ''}" placeholder="kg" onchange="app.majExo(${i}, 'chargeTheo', this.value)"></div>`}
                                 <div class="field"><label>Récup (s)</label><input class="input" type="number" inputmode="numeric" value="${ex.recup}" onchange="app.majExo(${i}, 'recup', this.value)"></div>
                                 <div class="field"><label>Tempo</label><input class="input" value="${esc(ex.tempo || '')}" placeholder="3-1-1" onchange="app.majExo(${i}, 'tempo', this.value)"></div>
                             </div>
@@ -2601,7 +2701,7 @@
                 const hist = [...this.sessionHistory].sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
                 for (const h of hist) {
                     const ex = (h.exercices || []).find(e => e.nom === nom);
-                    if (ex && ex.series.some(s => s.done)) return { date: h.completedAt, series: ex.series };
+                    if (ex && ex.series.some(s => s.done)) return { date: h.completedAt, series: ex.series, conseil: ex.conseil };
                 }
                 return null;
             }
@@ -2617,12 +2717,12 @@
                         const n = parseInt(ex.series) || 3;
                         const cibles = this.repsCibles(ex.reps, n);
                         const prev = this.dernierePerf(ex.nom);
-                        const kgDefaut = ex.chargeReelle || ex.chargeTheo || '';
+                        const kgDefaut = estPDC(ex.nom) ? '' : (ex.chargeReelle || ex.chargeTheo || '');
                         return {
                             nom: ex.nom, muscle: ex.muscle, forme: ex.forme, repsCible: ex.reps, recup: parseInt(ex.recup) || 90,
                             tempo: ex.tempo, chargeNiveau: ex.chargeNiveau,
                             series: Array.from({ length: n }, (_, k) => ({
-                                kg: prev && prev.series[k] && prev.series[k].kg !== '' && prev.series[k].kg !== null ? prev.series[k].kg : kgDefaut,
+                                kg: !estPDC(ex.nom) && prev && prev.series[k] && prev.series[k].kg !== '' && prev.series[k].kg !== null ? prev.series[k].kg : kgDefaut,
                                 reps: /^\d+$/.test(cibles[k]) ? cibles[k] : '',
                                 cible: cibles[k],
                                 done: false
@@ -2652,6 +2752,46 @@
                 let faites = 0, total = 0;
                 (live?.exercices || []).forEach(ex => ex.series.forEach(s => { total++; if (s.done) faites++; }));
                 return { faites, total };
+            }
+
+            lancerGuide() {
+                this.unlockAudio();
+                this.guide = { i: 0, end: Date.now() + ECHAUFFEMENT_GUIDE[0].s * 1000 };
+                this.startTicker();
+                this.render();
+            }
+
+            etapeGuideSuivante() {
+                const i = this.guide.i + 1;
+                if (i >= ECHAUFFEMENT_GUIDE.length) {
+                    this.guide = null;
+                    this.live.echauffement.cardio = true;
+                    this.live.echauffement.mobilite = true;
+                    this.saveLive();
+                    this.render();
+                    toast('🔥 Échauffement fait ! Fais 1 série légère sur ton 1er exercice, puis coche la 3e case.');
+                    return;
+                }
+                this.guide = { i, end: Date.now() + ECHAUFFEMENT_GUIDE[i].s * 1000 };
+                this.render();
+            }
+
+            arreterGuide() { this.guide = null; this.render(); }
+
+            renderGuide() {
+                const g = ECHAUFFEMENT_GUIDE[this.guide.i];
+                const reste = Math.max(0, Math.ceil((this.guide.end - Date.now()) / 1000));
+                return `
+                    <div class="guide">
+                        <div class="muted">Échauffement guidé • étape ${this.guide.i + 1}/${ECHAUFFEMENT_GUIDE.length}</div>
+                        <div class="guide-titre">${g.t}</div>
+                        <div class="guide-texte">${g.d}</div>
+                        <div class="guide-time" id="guide-time">${this.formatDuree(reste * 1000)}</div>
+                        <div class="row" style="justify-content: center;">
+                            <button class="btn btn-ghost" onclick="app.arreterGuide()">Arrêter</button>
+                            <button class="btn btn-primary" onclick="app.etapeGuideSuivante()">Étape suivante ⏭</button>
+                        </div>
+                    </div>`;
             }
 
             setEchauffement(champ, val) {
@@ -2719,11 +2859,12 @@
                         `<div class="row"><button class="btn btn-ghost" onclick="app.quitterLive()">←</button><button class="btn btn-success" onclick="app.terminerSeance()">Terminer</button></div>`)}
                     <main class="container page page-live">
                         <div class="box echauf">
-                            ${echaufOk ? `<div class="text-white" style="font-weight: 700;">✅ Échauffement fait</div>` : `
+                            ${this.guide ? this.renderGuide() : echaufOk ? `<div class="text-white" style="font-weight: 700;">✅ Échauffement fait</div>` : `
                                 <div class="box-title">🔥 Échauffement ${debutant ? 'obligatoire' : ''}</div>
                                 <label><input type="checkbox" ${e0.cardio ? 'checked' : ''} onchange="app.setEchauffement('cardio', this.checked)"> 🏃 Cardio léger (5-10 min) : vélo, tapis, rameur...</label>
                                 <label><input type="checkbox" ${e0.mobilite ? 'checked' : ''} onchange="app.setEchauffement('mobilite', this.checked)"> 🤸 Mobilité articulaire : rotations, étirements dynamiques</label>
-                                <label><input type="checkbox" ${e0.series ? 'checked' : ''} onchange="app.setEchauffement('series', this.checked)"> 💪 Séries d'échauffement : charges très légères</label>`}
+                                <label><input type="checkbox" ${e0.series ? 'checked' : ''} onchange="app.setEchauffement('series', this.checked)"> 💪 Séries d'échauffement : charges très légères</label>
+                                ${!(e0.cardio && e0.mobilite) ? `<button class="btn btn-primary btn-block mt-2" onclick="app.lancerGuide()">▶ Échauffement guidé (5 min)</button>` : ''}`}
                         </div>
 
                         ${L.exercices.map((ex, e) => this.renderLiveExo(ex, e)).join('')}
@@ -2740,7 +2881,11 @@
                 const video = fiche ? (fiche.video || (fiche.videos || [])[0]) : null;
                 const fini = ex.series.every(s => s.done);
                 const commence = ex.series.some(s => s.done);
-                const cible = `${ex.series.length} × ${esc(ex.repsCible)} • récup ${ex.recup} s${ex.chargeNiveau ? ' • ' + this.libelleNiveau(ex.chargeNiveau) : ''}${ex.tempo && !debutant ? ' • tempo ' + esc(ex.tempo) : ''}${this.live.type === 'Force Explosive' ? ' • ⚡ montée explosive' : ''}`;
+                const pdc = estPDC(ex.nom), temps = estTemps(ex.nom);
+                const niveau = pdc ? '💪 Poids du corps' : (ex.chargeNiveau ? this.libelleNiveau(ex.chargeNiveau) : '');
+                const cible = `${ex.series.length} × ${esc(ex.repsCible)}${temps ? ' s' : ''} • récup ${ex.recup} s${niveau ? ' • ' + niveau : ''}${ex.tempo && !debutant && !temps ? ' • tempo ' + esc(ex.tempo) : ''}${this.live.type === 'Force Explosive' && !temps ? ' • ⚡ montée explosive' : ''}`;
+                const perf = (x) => temps ? `${x.reps} s` : `${kgTxt(x.kg)} × ${x.reps}`;
+                const conseil = fini ? this.conseilCharge(ex) : null;
                 return `
                     <div class="live-ex ${fini ? 'done' : ''}">
                         <div class="row-between">
@@ -2755,28 +2900,99 @@
                                 <summary>⚠️ Consignes de sécurité</summary>
                                 ${consignes.map(c => `<div>${c}</div>`).join('')}
                             </details>` : ''}
-                        ${prev ? `<div class="muted mt-2" style="font-size: 0.85rem;">🕐 Dernière fois (${new Date(prev.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}) : ${prev.series.filter(s => s.done).map(s => `${kgTxt(s.kg)} × ${s.reps}`).join(' • ')}</div>` : ''}
+                        ${prev ? `<div class="muted mt-2" style="font-size: 0.9rem;">🕐 Dernière fois (${new Date(prev.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}) : ${prev.series.filter(s => s.done).map(perf).join(' • ')}</div>` : ''}
+                        ${prev && prev.conseil && !commence ? `<div class="conseil">💡 Conseil de la dernière fois : ${prev.conseil}</div>` : ''}
                         <table class="sets">
-                            <thead><tr><th>Série</th><th>Précédent</th><th>kg</th><th>Reps</th><th>✓</th></tr></thead>
+                            <thead><tr><th>Série</th><th>Précédent</th><th>${temps ? 'Chrono' : (pdc ? 'Charge' : 'kg')}</th><th>${temps ? 'Secondes' : 'Reps'}</th><th>✓</th></tr></thead>
                             <tbody>
                                 ${ex.series.map((s, k) => {
-                                    const p = prev && prev.series[k] && prev.series[k].done ? `${kgTxt(prev.series[k].kg)} × ${prev.series[k].reps}` : '—';
+                                    const p = prev && prev.series[k] && prev.series[k].done ? perf(prev.series[k]) : '—';
+                                    const enCours = this.chrono && this.chrono.e === e && this.chrono.k === k;
+                                    const celluleCharge = temps
+                                        ? `<button class="chrono-btn ${enCours ? 'on' : ''}" id="chrono-${e}-${k}" onclick="app.lancerChrono(${e}, ${k})" ${s.done ? 'disabled' : ''}>${enCours ? '⏹ ' + Math.max(0, Math.ceil((this.chrono.end - Date.now()) / 1000)) + ' s' : '▶ ' + (parseInt(s.cible) || 30) + ' s'}</button>`
+                                        : (pdc ? `<span class="pdc-cell">PDC</span>` : `<input class="set-input" id="kg-${e}-${k}" type="number" inputmode="decimal" step="0.5" value="${esc(s.kg)}" placeholder="kg" onchange="app.majSerie(${e}, ${k}, 'kg', this.value)">`);
                                     return `
                                     <tr class="${s.done ? 'set-done' : ''}">
                                         <td class="set-num">${k + 1}</td>
                                         <td class="set-prev">${p}</td>
-                                        <td><input class="set-input" id="kg-${e}-${k}" type="number" inputmode="decimal" step="0.5" value="${esc(s.kg)}" placeholder="${debutant ? 'kg' : 'PDC'}" onchange="app.majSerie(${e}, ${k}, 'kg', this.value)"></td>
+                                        <td>${celluleCharge}</td>
                                         <td><input class="set-input" id="reps-${e}-${k}" type="number" inputmode="numeric" value="${esc(s.reps)}" placeholder="${esc(s.cible)}" onchange="app.majSerie(${e}, ${k}, 'reps', this.value)"></td>
                                         <td><button class="set-check ${s.done ? 'on' : ''}" onclick="app.cocherSerie(${e}, ${k})">✓</button></td>
                                     </tr>`;
                                 }).join('')}
                             </tbody>
                         </table>
+                        ${conseil ? `<div class="conseil">💡 Prochaine fois : ${conseil}</div>` : ''}
                         <div class="row mt-2">
                             <button class="btn-icon grow" onclick="app.ajouterSerie(${e})">+ Série</button>
                             <button class="btn-icon" onclick="app.retirerSerie(${e})" ${ex.series.length <= 1 ? 'disabled style="opacity:0.3"' : ''}>− Série</button>
                         </div>
                     </div>`;
+            }
+
+            // Conseil simple pour la prochaine séance, à partir des répétitions faites
+            conseilCharge(ex) {
+                const faites = ex.series.filter(s => s.done);
+                if (!faites.length) return null;
+                if (ex.series.some(s => !/^\d+$/.test(String(s.cible)))) return null;
+                if (faites.length < ex.series.length) return 'termine toutes tes séries avant de changer la charge.';
+                const plage = String(ex.repsCible || '').trim().match(/^(\d+)-(\d+)$/);
+                const haut = plage && ex.series.length !== 2 ? parseInt(plage[2]) : null;
+                const reps = ex.series.map(s => parseInt(s.reps) || 0);
+                const cibles = ex.series.map(s => parseInt(s.cible));
+                const ecarts = reps.map((r, i) => r - cibles[i]);
+                const tropFacile = haut ? reps.every(r => r >= haut) : ecarts.every(d => d >= 2);
+                const atteint = ecarts.every(d => d >= 0);
+                const tropDur = ecarts.some(d => d <= -3) || ecarts.filter(d => d < 0).length >= 2;
+                const temps = estTemps(ex.nom);
+                if (estPDC(ex.nom)) {
+                    if (tropFacile) return temps ? 'tiens 10 s de plus, ou prends une variante plus difficile.' : 'fais 2 répétitions de plus, ou prends une variante plus difficile.';
+                    if (atteint) return temps ? 'objectif atteint 👍 essaie de tenir 5 s de plus.' : 'objectif atteint 👍 essaie 1 répétition de plus.';
+                    if (tropDur) return 'garde le même objectif, ou prends une variante plus facile (sur les genoux, assistée…).';
+                    return 'garde le même objectif, tu y es presque.';
+                }
+                const kg = Math.max(...faites.map(s => parseFloat(s.kg) || 0));
+                if (!kg) return null;
+                const pas = /Haltère|Goblet/i.test(ex.nom) ? 1 : 2.5;
+                const f = (v) => String(Math.round(v * 2) / 2).replace('.', ',');
+                if (tropFacile) return `monte à ${f(kg + pas)} kg (+${f(pas)} kg) : c'était trop facile pour l'objectif.`;
+                if (atteint) return `garde ${f(kg)} kg, ou passe à ${f(kg + pas)} kg si les dernières répétitions étaient faciles.`;
+                if (tropDur) return `descends à ${f(Math.max(0, kg - pas))} kg : la charge est trop lourde pour l'objectif.`;
+                return `garde ${f(kg)} kg et vise toutes les répétitions.`;
+            }
+
+            // Chrono d'une série de gainage
+            lancerChrono(e, k) {
+                this.unlockAudio();
+                if (this.chrono) {
+                    // arrêt avant la fin : on note le temps tenu, la série n'est pas validée
+                    const c = this.chrono;
+                    const tenu = Math.round((Date.now() - c.start) / 1000);
+                    this.chrono = null;
+                    if (c.e === e && c.k === k) {
+                        this.live.exercices[e].series[k].reps = String(tenu);
+                        this.saveLive();
+                        this.render();
+                        return;
+                    }
+                }
+                const serie = this.live.exercices[e].series[k];
+                const total = parseInt(serie.cible) || 30;
+                this.stopRest();
+                this.chrono = { e, k, total, start: Date.now(), end: Date.now() + total * 1000 };
+                this.startTicker();
+                this.render();
+            }
+
+            finChrono() {
+                const { e, k, total } = this.chrono;
+                this.chrono = null;
+                this.playTimerSound();
+                const serie = this.live.exercices[e].series[k];
+                serie.reps = String(total);
+                if (!serie.done) this.cocherSerie(e, k);
+                else { this.saveLive(); this.render(); }
+                toast('✅ Bravo, série tenue !');
             }
 
             formatDuree(ms) {
@@ -2844,6 +3060,25 @@
                 }
                 const el = document.getElementById('elapsed');
                 if (el && this.live) el.textContent = this.formatDuree(Date.now() - this.live.startedAt);
+                if (this.chrono) {
+                    const r = Math.ceil((this.chrono.end - Date.now()) / 1000);
+                    if (r <= 0) this.finChrono();
+                    else { const b = document.getElementById(`chrono-${this.chrono.e}-${this.chrono.k}`); if (b) b.textContent = `⏹ ${r} s`; }
+                }
+                if (this.guide) {
+                    const r = Math.ceil((this.guide.end - Date.now()) / 1000);
+                    if (r <= 0) { this.playTimerSound(); this.etapeGuideSuivante(); }
+                    else { const g = document.getElementById('guide-time'); if (g) g.textContent = this.formatDuree(r * 1000); }
+                }
+                if (this.etir) {
+                    const r = Math.ceil((this.etir.end - Date.now()) / 1000);
+                    const b = document.getElementById(`etir-${this.etir.i}`);
+                    if (r <= 0) {
+                        const i = this.etir.i; this.etir = null; this.playTimerSound();
+                        if (!this.bilan.etirFaits.includes(i)) this.bilan.etirFaits.push(i);
+                        if (b) { b.textContent = '✅ Fait'; b.classList.add('fait'); }
+                    } else if (b) b.textContent = `⏹ ${r} s`;
+                }
             }
 
             timerFinished() {
@@ -2869,7 +3104,8 @@
                     return;
                 }
                 this.stopRest();
-                this.bilan = { ressenti: null, rpe: null };
+                this.chrono = null; this.guide = null;
+                this.bilan = { ressenti: null, rpe: null, etirFaits: [] };
                 this.view = 'bilan';
                 this.go();
             }
@@ -2882,12 +3118,12 @@
 
             choisirRessenti(id) {
                 const r = RESSENTIS.find(x => x.id === id);
-                this.bilan = { ressenti: id, rpe: r.rpe };
+                Object.assign(this.bilan, { ressenti: id, rpe: r.rpe });
                 document.querySelectorAll('.ressenti-btn').forEach(b => b.classList.toggle('active', b.dataset.id === id));
             }
 
             choisirRPE(rpe) {
-                this.bilan = { ressenti: null, rpe };
+                Object.assign(this.bilan, { ressenti: null, rpe });
                 document.querySelectorAll('.rpe-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.rpe) === rpe));
                 const d = document.getElementById('rpe-description');
                 if (d) d.textContent = RPE_DESCRIPTIONS[rpe] || '';
@@ -2910,7 +3146,7 @@
                             ${L.exercices.map(ex => `
                                 <div class="row-between" style="padding: 0.35rem 0; border-bottom: 1px solid rgba(148,163,184,0.1);">
                                     <span class="text-white">${ex.series.every(s => s.done) ? '✅' : ex.series.some(s => s.done) ? '🟡' : '⬜'} ${esc(ex.nom)}</span>
-                                    <span class="muted">${ex.series.filter(s => s.done).map(s => `${kgTxt(s.kg)} × ${s.reps}`).join(' • ') || '—'}</span>
+                                    <span class="muted">${ex.series.filter(s => s.done).map(s => estTemps(ex.nom) ? `${s.reps} s` : `${kgTxt(s.kg)} × ${s.reps}`).join(' • ') || '—'}</span>
                                 </div>`).join('')}
                         </div>
                         <div class="box">
@@ -2926,6 +3162,15 @@
                                 <div id="rpe-description" class="text-cyan text-center mt-2" style="min-height: 1.5rem;">${this.bilan.rpe ? RPE_DESCRIPTIONS[this.bilan.rpe] : ''}</div>`}
                         </div>
                         <div class="box">
+                            <div class="box-title">🧘 Retour au calme (facultatif, 1 min 30)</div>
+                            <div class="muted mb-3">Étirements doux, sans douleur, 30 secondes chacun.</div>
+                            ${this.etirementsSeance(L).map((m, i) => `
+                                <div class="etir-row">
+                                    <div class="grow"><div class="text-white" style="font-weight: 700;">${m}</div><div class="muted">${ETIREMENTS[m]}</div></div>
+                                    <button class="chrono-btn ${this.bilan.etirFaits.includes(i) ? 'fait' : ''}" id="etir-${i}" onclick="app.lancerEtirement(${i})">${this.bilan.etirFaits.includes(i) ? '✅ Fait' : '▶ 30 s'}</button>
+                                </div>`).join('')}
+                        </div>
+                        <div class="box">
                             <div class="box-title">📋 Notes (facultatif)</div>
                             <textarea class="input" id="session-notes" rows="3" placeholder="Ressenti, difficultés, ce que je change la prochaine fois..."></textarea>
                         </div>
@@ -2934,13 +3179,29 @@
                     </main>`;
             }
 
+            etirementsSeance(L) {
+                const muscles = [...new Set(L.exercices.map(e => e.muscle).filter(m => ETIREMENTS[m]))];
+                ['Quadriceps', 'Dorsaux', 'Pectoraux', 'Ischio-jambiers'].forEach(m => { if (muscles.length < 3 && !muscles.includes(m)) muscles.push(m); });
+                return muscles.slice(0, 3);
+            }
+
+            lancerEtirement(i) {
+                this.unlockAudio();
+                if (this.etir && this.etir.i === i) { this.etir = null; const b = document.getElementById(`etir-${i}`); if (b) b.textContent = '▶ 30 s'; return; }
+                if (this.etir) { const b = document.getElementById(`etir-${this.etir.i}`); if (b && !b.classList.contains('fait')) b.textContent = '▶ 30 s'; }
+                this.etir = { i, end: Date.now() + 30000 };
+                const b = document.getElementById(`etir-${i}`); if (b) b.textContent = '⏹ 30 s';
+                this.startTicker();
+            }
+
             enregistrerBilan() {
                 if (!this.bilan.rpe) { toast(this.userMode === 'debutant' ? 'Choisis ton ressenti 🙂' : 'Indique ton RPE'); return; }
                 const L = this.live;
                 const { faites, total } = this.compterSeries(L);
                 const exercices = L.exercices.map(ex => ({
                     nom: ex.nom, muscle: ex.muscle, forme: ex.forme, repsCible: ex.repsCible, chargeNiveau: ex.chargeNiveau,
-                    series: ex.series.map(s => ({ kg: s.kg === '' || s.kg === null ? null : parseFloat(s.kg), reps: parseInt(s.reps) || 0, done: !!s.done }))
+                    series: ex.series.map(s => ({ kg: s.kg === '' || s.kg === null ? null : parseFloat(s.kg), reps: parseInt(s.reps) || 0, done: !!s.done })),
+                    conseil: this.conseilCharge(ex)
                 }));
                 const exFinis = exercices.filter(ex => ex.series.every(s => s.done)).length;
                 const entry = {
@@ -2952,6 +3213,7 @@
                     completed: faites === total, tonnage: this.tonnage(L.exercices),
                     echauffement: L.echauffement.cardio && L.echauffement.mobilite && L.echauffement.series,
                     rpe: this.bilan.rpe, ressenti: this.bilan.ressenti,
+                    retourCalme: (this.bilan.etirFaits || []).length,
                     notes: (document.getElementById('session-notes')?.value || '').trim()
                 };
                 this.sessionHistory.push(entry);
@@ -3000,11 +3262,12 @@
                             </div>
                             ${ouvert ? `
                                 <div class="hist-detail" onclick="event.stopPropagation()">
-                                    ${h.type ? `<div class="mb-2"><span class="badge-obj">${esc(this.getMobileLabel(h.type))}</span> ${h.echauffement === false ? '<span class="tag">⚠️ échauffement non coché</span>' : ''}</div>` : ''}
+                                    ${h.type ? `<div class="mb-2"><span class="badge-obj">${esc(this.getMobileLabel(h.type))}</span> ${h.echauffement === false ? '<span class="tag">⚠️ échauffement non coché</span>' : ''}${h.retourCalme ? '<span class="tag">🧘 retour au calme</span>' : ''}</div>` : ''}
                                     ${(h.exercices || []).map(ex => `
                                         <div style="padding: 0.3rem 0;">
                                             <div class="text-white" style="font-weight: 600;">${esc(ex.nom)}</div>
-                                            <div class="muted">${ex.series.map(s => s.done ? `${kgTxt(s.kg)} × ${s.reps}` : '<span style="opacity:0.5">non faite</span>').join(' • ')}</div>
+                                            <div class="muted">${ex.series.map(s => s.done ? (estTemps(ex.nom) ? `${s.reps} s` : `${kgTxt(s.kg)} × ${s.reps}`) : '<span style="opacity:0.5">non faite</span>').join(' • ')}</div>
+                                            ${ex.conseil ? `<div class="conseil" style="margin-top:0.3rem;">💡 ${ex.conseil}</div>` : ''}
                                         </div>`).join('')}
                                     ${h.notes ? `<div class="mt-2 text-white" style="font-style: italic; opacity: 0.9;">💬 « ${esc(h.notes)} »</div>` : ''}
                                     <div class="row mt-4">
@@ -3036,7 +3299,7 @@
                 const r = RESSENTIS.find(x => x.id === h.ressenti);
                 doc.text(`Séries : ${h.seriesFaites}/${h.seriesTotal}   Tonnage : ${h.tonnage} kg`, 20, y);
                 doc.text(`Ressenti : ${r ? r.label : 'RPE ' + h.rpe + '/10'}`, 120, y);
-                y += 6; doc.text(`Échauffement : ${h.echauffement ? 'fait' : 'non coché'}`, 20, y);
+                y += 6; doc.text(`Échauffement : ${h.echauffement ? 'fait' : 'non coché'}`, 20, y); doc.text(`Retour au calme : ${h.retourCalme ? 'fait' : 'non'}`, 120, y);
                 y += 12;
                 (h.exercices || []).forEach((ex, i) => {
                     if (y > 265) { doc.addPage(); y = 20; }
@@ -3045,8 +3308,9 @@
                     doc.setFontSize(9); doc.setTextColor(6, 150, 180);
                     doc.text(`${ex.muscle || ''}${ex.repsCible ? '  -  cible : ' + ex.repsCible + ' reps' : ''}${ex.chargeNiveau ? '  -  ' + ex.chargeNiveau : ''}`, 25, y + 5);
                     y += 11; doc.setFontSize(10); doc.setTextColor(60, 70, 90);
-                    const txt = ex.series.map((s, k) => `S${k + 1} : ${s.done ? kgTxt(s.kg) + ' x ' + s.reps : 'non faite'}`).join('    ');
+                    const txt = ex.series.map((s, k) => `S${k + 1} : ${s.done ? (estTemps(ex.nom) ? s.reps + ' s' : kgTxt(s.kg) + ' x ' + s.reps) : 'non faite'}`).join('    ');
                     doc.splitTextToSize(txt, 165).forEach(line => { doc.text(line, 25, y); y += 5; });
+                    if (ex.conseil) { doc.setTextColor(180, 120, 0); doc.splitTextToSize('Prochaine fois : ' + ex.conseil.replace(/👍/g, ''), 165).forEach(line => { doc.text(line, 25, y); y += 5; }); doc.setTextColor(60, 70, 90); }
                     y += 4;
                 });
                 if (h.notes) {
@@ -3244,10 +3508,32 @@
                         </div>
                     </div>
 
+                    <div class="box">
+                        <div class="box-title">🔁 Fin de cycle</div>
+                        <div class="muted mb-3">Avant de rendre l'iPad à la fin du cycle : exporte ton livret, puis efface tous les profils de cet iPad pour la classe suivante.</div>
+                        <button class="btn btn-secondary" onclick="app.finDeCycle()">🔁 Exporter puis effacer l'iPad</button>
+                    </div>
+
                     ${!installe ? `<div class="install-tip mb-4">📲 <strong>Installe l'appli</strong> : Partager ⬆️ puis « Sur l'écran d'accueil ». Ouvre-la toujours depuis l'icône pour ne pas perdre tes séances.</div>` : ''}
 
-                    <div class="text-center mt-4"><button class="btn btn-link" style="color: #fca5a5;" onclick="app.supprimerProfil()">🗑️ Supprimer ce profil</button></div>
+                    <div class="text-center mt-4"><button class="btn btn-link btn-danger-link" onclick="app.supprimerProfil()">🗑️ Supprimer ce profil</button></div>
                     <div class="text-center muted mt-2" style="font-size: 0.8rem;">Version ${APP_VERSION}</div>`;
+            }
+
+            finDeCycle() {
+                if (!confirm('Fin de cycle :\n1. ton livret va être exporté (garde le fichier ou envoie-le à ton professeur) ;\n2. ensuite, TOUS les profils de cet iPad seront effacés.\n\nContinuer ?')) return;
+                this.exportData();
+                setTimeout(() => {
+                    if (!confirm('As-tu bien enregistré le fichier exporté ?\n\nOK = effacer tous les profils de cet iPad maintenant.')) return;
+                    const keys = [];
+                    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith('user-')) keys.push(k); }
+                    keys.forEach(k => localStorage.removeItem(k));
+                    localStorage.removeItem(PROFILS_KEY);
+                    localStorage.removeItem(DERNIER_KEY);
+                    this.live = null; this.stopRest();
+                    this.changerProfil();
+                    toast('🔁 iPad prêt pour la classe suivante');
+                }, 1200);
             }
 
             exportData() {
@@ -3260,7 +3546,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `livret-${String(this.currentUser).replace(/[^a-z0-9]/gi, '_')}-${new Date().toISOString().split('T')[0]}.json`;
+                a.download = `livret-${String(this.currentUser).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '_')}-${new Date().toISOString().split('T')[0]}.json`;
                 document.body.appendChild(a); a.click(); a.remove();
                 setTimeout(() => URL.revokeObjectURL(url), 2000);
             }
@@ -3642,7 +3928,6 @@
 
                 return `
                     <div>
-                        <h2 class="text-white mb-4" style="font-size: 1.5rem;">📚 Cours & Ressources</h2>
                         <div class="flex gap-2 mb-4" style="overflow-x: auto;">
                             <button class="sub-tab-btn ${this.currentCoursTab === 'principes' ? 'active' : ''}" onclick="app.switchCoursTab('principes')">📖 Principes</button>
                             <button class="sub-tab-btn ${this.currentCoursTab === 'mobiles' ? 'active' : ''}" onclick="app.switchCoursTab('mobiles')">🎯 Mobiles</button>
@@ -3651,6 +3936,7 @@
                             <button class="sub-tab-btn ${this.currentCoursTab === 'hygiene' ? 'active' : ''}" onclick="app.switchCoursTab('hygiene')">🧘 Hygiène</button>
                             <button class="sub-tab-btn ${this.currentCoursTab === 'anatomie' ? 'active' : ''}" onclick="app.switchCoursTab('anatomie')">🫀 Anatomie</button>
                             <button class="sub-tab-btn ${this.currentCoursTab === 'exercices' ? 'active' : ''}" onclick="app.switchCoursTab('exercices')">🏋️ Exercices</button>
+                            <button class="sub-tab-btn ${this.currentCoursTab === 'lexique' ? 'active' : ''}" onclick="app.switchCoursTab('lexique')">🔤 Lexique</button>
                         </div>
                         ${this.currentCoursTab === 'principes' ? this.renderPrincipesTab() : ''}
                         ${this.currentCoursTab === 'mobiles' ? this.renderMobilesTab() : ''}
@@ -3659,8 +3945,18 @@
                         ${this.currentCoursTab === 'hygiene' ? this.renderHygieneTab() : ''}
                         ${this.currentCoursTab === 'anatomie' ? this.renderAnatomieTab() : ''}
                         ${this.currentCoursTab === 'exercices' ? this.renderExercicesTab(filteredExercises) : ''}
+                        ${this.currentCoursTab === 'lexique' ? this.renderLexiqueTab() : ''}
                     </div>
                 `;
+            }
+
+            renderLexiqueTab() {
+                return `<div>${coursData.lexique.map(l => `
+                    <div class="exercise-card" style="padding: 1rem 1.2rem;">
+                        <h4 style="margin-bottom: 0.35rem;">${l.mot}</h4>
+                        <p class="text-white" style="opacity: 0.9;">${l.def}</p>
+                        ${l.ex ? `<p class="text-cyan" style="margin-top: 0.35rem; font-size: 0.92rem;">Exemple : ${l.ex}</p>` : ''}
+                    </div>`).join('')}</div>`;
             }
 
             filterExercises(exercises) {
