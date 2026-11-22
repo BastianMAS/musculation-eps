@@ -1170,6 +1170,24 @@
         .progres-chip.down { background: #fed7aa; color: #7c2d12; }
         .bilan-compare { margin-top: 0.4rem; font-size: 0.95rem; }
         .regul-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 0.8rem; }
+        /* v4.4 : méthodes et évaluation */
+        .aide-methode { font-size: 0.88rem; color: #c4b5fd; margin-top: 0.3rem; font-weight: 500; }
+        .eval-box.on { border: 2px solid #c4b5fd !important; }
+        .eval-toggle { display: flex; gap: 0.6rem; align-items: center; font-weight: 700; font-size: 1.05rem; color: #f1f5f9; cursor: pointer; }
+        .eval-toggle input { width: 1.4rem; height: 1.4rem; }
+        .eval-q { font-weight: 700; color: #ddd6fe; margin: 0.9rem 0 0.4rem; }
+        .eval-fields { margin-top: 0.6rem; }
+        .eval-legende { font-size: 0.88rem; margin-top: 0.5rem; opacity: 0.9; }
+        .ress-row td { padding-top: 0 !important; }
+        .ress-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.2rem 0 0.5rem; }
+        .ress-chip { border: 1.5px solid rgba(196,181,253,0.5); background: transparent; color: inherit; border-radius: 999px; padding: 0.45rem 0.8rem; font-size: 0.92rem; min-height: 40px; cursor: pointer; }
+        .ress-chip.on { background: #c4b5fd; color: #2e1065; border-color: #c4b5fd; font-weight: 700; }
+        .analyse-exo { padding: 0.6rem 0; border-bottom: 1px solid rgba(148,163,184,0.15); }
+        .analyse-q { font-size: 0.9rem; margin-top: 0.4rem; opacity: 0.85; }
+        .tag-eval { background: #ddd6fe; color: #4c1d95; border-radius: 999px; padding: 0.1rem 0.55rem; font-size: 0.8rem; font-weight: 700; }
+        .theme-badge { display: inline-block; background: #fde68a; color: #78350f; border-radius: 999px; padding: 0.1rem 0.6rem; font-size: 0.8rem; font-weight: 800; vertical-align: middle; }
+        .trois-mots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.6rem; }
+        .trois-mots-grid div { background: rgba(196,181,253,0.12); border-radius: 0.8rem; padding: 0.7rem; display: flex; flex-direction: column; gap: 0.25rem; }
         /* ===============================================
            THÈME CLAIR "MARINE & OR" (couleurs du logo)
            =============================================== */
@@ -1274,6 +1292,12 @@
         body:not(.mode-sombre) .live-groupe { border-color: #a78bfa; background: #f5f3ff; }
         body:not(.mode-sombre) .live-groupe-tete { color: #4c1d95; }
         body:not(.mode-sombre) .echauf-series { background: #fef3c7; color: #78350f; }
+        body:not(.mode-sombre) .aide-methode { color: #5b21b6; }
+        body:not(.mode-sombre) .eval-toggle { color: #13284d; }
+        body:not(.mode-sombre) .eval-q { color: #4c1d95; }
+        body:not(.mode-sombre) .ress-chip { border-color: #a78bfa; color: #312e81; background: #fff; }
+        body:not(.mode-sombre) .ress-chip.on { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+        body:not(.mode-sombre) .trois-mots-grid div { background: #f5f3ff; color: #1e1b4b; }
 
 </style>
 </head>
@@ -1285,7 +1309,7 @@
         // Pas de code d'accès : chaque élève garde le même iPad pendant le cycle.
         // ===============================================
 
-        const APP_VERSION = '4.3';   // à garder identique au numéro de sw.js
+        const APP_VERSION = '4.5';   // à garder identique au numéro de sw.js
         const PROFILS_KEY = 'livret-profils';
         const DERNIER_KEY = 'livret-dernier-profil';
 
@@ -1473,6 +1497,30 @@
             1: '😌 Très très facile', 2: '😊 Facile', 3: '🙂 Modéré', 4: '😐 Un peu difficile', 5: '😅 Difficile',
             6: '😓 Plus difficile', 7: '😰 Très difficile', 8: '😵 Extrêmement difficile', 9: '💀 Presque maximal', 10: '🔥 Effort maximal absolu'
         };
+        // Méthodes proposées en mode Débutant (paramètres générés automatiquement, repris du Cours)
+        const METHODES_DEB = {
+            'Endurance Musculaire': { 'Séries droites': { series: 3, reps: '20', recup: 45 }, 'Pyramidal ascendant': { series: 3, reps: '25-20-15', recup: 45 } },
+            'Hypertrophie': { 'Séries droites': { series: 4, reps: '10', recup: 90 }, 'Pyramidal ascendant': { series: 4, reps: '12-10-8-6', recup: 90 }, 'Stato-dynamique': { series: 3, reps: '8', recup: 90 } },
+            'Force Explosive': { 'Séries droites': { series: 4, reps: '5', recup: 180 }, 'Stato-dynamique': { series: 4, reps: '5', recup: 180 } }
+        };
+        METHODES_DEB['Personnalisé'] = METHODES_DEB['Hypertrophie'];
+        const NOM_METHODE = { 'Séries droites': 'Constante', 'Pyramidal ascendant': 'Pyramide', 'Pyramidal descendant': 'Pyramide descendante', 'Stato-dynamique': 'Stato-dynamique' };
+        const nomMethode = (f) => NOM_METHODE[f] || f || 'Constante';
+        const aideMethode = (f, mobile) => ({
+            'Séries droites': 'même charge et mêmes répétitions à chaque série',
+            'Pyramidal ascendant': 'à chaque série, un peu plus lourd et un peu moins de répétitions',
+            'Pyramidal descendant': 'à chaque série, un peu plus léger et un peu plus de répétitions',
+            'Stato-dynamique': `à chaque répétition, arrêt de 2 s à mi-course, puis remontée${mobile === 'Force Explosive' ? ' explosive' : ''}`
+        }[f] || '');
+        // Mobiles personnels proposés pour le projet (séance d'évaluation)
+        const MOBILES_PERSO = ['😌 Me sentir bien dans mon corps', '💼 Être plus forte pour mon métier', '✨ Me tonifier, affiner ma silhouette', '⚽ Être plus performante dans un sport', '🩹 Prévenir les douleurs (dos, posture)'];
+        // Échelle des ressentis musculaires (AFLP 2)
+        const RESSENTIS_MUSC = [
+            { id: 'rien', emo: '😐', label: 'Rien', aide: 'pas de sensation' },
+            { id: 'congestion', emo: '💪', label: 'Congestion', aide: 'muscle gonflé, chaud' },
+            { id: 'brulure', emo: '🔥', label: 'Brûlure', aide: 'ça pique en fin de série' },
+            { id: 'vide', emo: '🪫', label: 'Vide', aide: 'plus une seule rép possible' }
+        ];
         const kgTxt = (kg, nom = null) => (kg === null || kg === undefined || kg === '' || parseFloat(kg) === 0) ? (nom && !estPDC(nom) ? '? kg' : 'PDC') : `${String(kg).replace('.', ',')} kg`;
         const rpeColor = (rpe) => rpe <= 3 ? '#86efac' : rpe <= 6 ? '#fde68a' : rpe <= 8 ? '#fdba74' : '#fca5a5';
 
@@ -1517,6 +1565,7 @@
                 },
                 {
                     nom: "FORCE EXPLOSIVE (PUISSANCE)",
+                    theme: "PUISSANCE",
                     color: "#f97316",
                     definition: "Produire de la force le plus vite possible. Puissance = Force × Vitesse : on cherche la vitesse d'exécution, pas la charge lourde. On sollicite surtout les fibres musculaires rapides.",
                     objectif: "Améliorer la vitesse d'exécution, l'explosivité, la détente",
@@ -1533,6 +1582,7 @@
                 },
                 {
                     nom: "HYPERTROPHIE (MASSE MUSCULAIRE)",
+                    theme: "VOLUME",
                     color: "#3b82f6",
                     definition: "Augmenter le volume du muscle. Des séries de 6 à 12 répétitions, exécutées lentement et terminées avec une vraie fatigue, poussent le muscle à se renforcer et à grossir pendant la récupération.",
                     objectif: "Développer le volume et la force du muscle",
@@ -1565,6 +1615,7 @@
                 },
                 {
                     nom: "ENDURANCE MUSCULAIRE",
+                    theme: "FORME",
                     color: "#10b981",
                     definition: "Répéter un effort longtemps avec des charges légères. Le muscle apprend à mieux utiliser l'oxygène (il se développe plus de petits vaisseaux sanguins autour des fibres) et résiste mieux à la fatigue.",
                     objectif: "Tonification, résistance à la fatigue, santé",
@@ -1606,8 +1657,8 @@
 
             formesEntrainement: [
                 {
-                    nom: "SÉRIES DROITES (STRAIGHT SETS)",
-                    definition: "Forme classique d'entraînement où l'on effectue le même nombre de répétitions avec la même charge sur toutes les séries. Base de la musculation traditionnelle.",
+                    nom: "MÉTHODE CONSTANTE (SÉRIES DROITES)",
+                    definition: "La même charge et le même nombre de répétitions à chaque série. C'est la méthode de base : idéale pour apprendre la technique et trouver sa bonne charge.",
                     structure: "X séries × Y répétitions à Z kg",
                     avantages: ["Simple à comprendre et appliquer", "Facile à suivre et noter", "Excellent pour la progression linéaire", "Permet de maintenir la charge constante"],
                     inconvenients: ["Peut devenir monotone", "Fatigue progressive affecte les dernières séries", "Peu de variation de stimulus"],
@@ -1615,13 +1666,31 @@
                     exemple: "Développé Couché : 4 séries de 8 répétitions à 30 kg. Repos : 90 secondes entre les séries."
                 },
                 {
-                    nom: "SÉRIES PYRAMIDALES",
-                    definition: "Variation de charge et/ou de répétitions d'une série à l'autre. Peut être ascendante (charge augmente, reps diminuent), descendante (charge diminue, reps augmentent) ou en double pyramide.",
+                    nom: "MÉTHODE PYRAMIDALE",
+                    definition: "La charge et les répétitions changent à chaque série. Pyramide ascendante (la plus utilisée en EPS) : à chaque série, on charge un peu plus et on fait un peu moins de répétitions. Pyramide descendante : l'inverse.",
                     structure: "Charge et répétitions variables selon progression",
                     avantages: ["Stimulation musculaire variée", "Permet d'atteindre intensités maximales et volumes élevés", "Excellent pour force + hypertrophie", "Moins monotone"],
                     inconvenients: ["Plus complexe à programmer", "Nécessite plusieurs poids/réglages", "Fatigue importante si mal dosée", "Calculs nécessaires"],
-                    public: "Intermédiaire à confirmé",
+                    public: "Débutant (pyramide ascendante courte) à confirmé",
                     exemple: "Squat en pyramide : 30 kg × 12, 35 kg × 10, 40 kg × 8, 45 kg × 6 (sommet). Repos : 2 min."
+                },
+                {
+                    nom: "MÉTHODE STATO-DYNAMIQUE",
+                    definition: "À chaque répétition, on marque un arrêt de 2 à 3 secondes à mi-course (le muscle travaille sans bouger), puis on termine le mouvement. Pour la puissance, la remontée après l'arrêt est explosive.",
+                    structure: "Descente → arrêt 2-3 s à mi-course → remontée (explosive en puissance)",
+                    avantages: ["Renforce le muscle dans la position la plus difficile", "Oblige à contrôler le mouvement", "Charges plus légères qu'en constante", "Sensations de brûlure rapides : bon repère pour l'analyse"],
+                    inconvenients: ["Très exigeant sur peu de répétitions", "Il faut bien compter l'arrêt", "La respiration doit rester régulière (pas d'apnée longue)"],
+                    public: "Débutant à confirmé",
+                    exemple: "Squat goblet 12 kg : 3 séries de 8 répétitions, arrêt de 2 s cuisses presque parallèles au sol à chaque répétition, puis remontée. Repos : 90 s."
+                },
+                {
+                    nom: "MÉTHODE BULGARE (CONTRASTE)",
+                    definition: "On alterne une série lourde et une série légère faite le plus vite possible. Le contraste entre les deux charges améliore la puissance.",
+                    structure: "S1 lourde → S2 légère et explosive → S3 lourde → S4 légère et explosive",
+                    avantages: ["Développe la vitesse et la puissance", "Varie les sensations d'une série à l'autre"],
+                    inconvenients: ["Demande de changer de charge à chaque série", "Technique parfaite indispensable sur la série lourde"],
+                    public: "Élèves expérimentés (pratique personnelle, AS) avec l'accord du professeur",
+                    exemple: "Squat : 40 kg × 6 → 20 kg × 6 sautés → 40 kg × 6 → 20 kg × 6 sautés. Repos : 2 à 3 min."
                 },
                 {
                     nom: "SÉRIES DÉGRESSIVES (DROP SETS)",
@@ -1673,7 +1742,7 @@
                     }
                 },
                 "Hypertrophie": {
-                    formes: ["Séries droites", "Pyramidal ascendant", "Pyramidal descendant", "Dégressif", "Superset", "Biset", "Triset", "Rest-pause", "Séries longues"],
+                    formes: ["Séries droites", "Pyramidal ascendant", "Pyramidal descendant", "Stato-dynamique", "Dégressif", "Superset", "Biset", "Triset", "Rest-pause", "Séries longues"],
                     params: {
                         "Séries droites": { series: 4, reps: "8-12", intensite: "70-80%", tempo: "3-1-1-0", recup: 90 },
                         "Pyramidal ascendant": { series: 4, reps: "12-10-8-6", intensite: "65-80%", tempo: "3-1-1-0", recup: 90 },
@@ -1683,13 +1752,15 @@
                         "Biset": { series: 4, reps: "8-10", intensite: "70-75%", tempo: "3-1-1-0", recup: 90 },
                         "Triset": { series: 3, reps: "8-10-12", intensite: "75-70-65%", tempo: "3-1-1-0", recup: 90 },
                         "Rest-pause": { series: 3, reps: "8+3+1", intensite: "75-80%", tempo: "3-1-1-0", recup: 90 },
-                        "Séries longues": { series: 3, reps: "10-12", intensite: "65-70%", tempo: "3-1-1-0", recup: 75 }
+                        "Séries longues": { series: 3, reps: "10-12", intensite: "65-70%", tempo: "3-1-1-0", recup: 75 },
+                        "Stato-dynamique": { series: 3, reps: "8", intensite: "60-70%", tempo: "2-2-1-0", recup: 90 }
                     }
                 },
                 "Force Explosive": {
-                    formes: ["Séries droites", "Rest-pause"],
+                    formes: ["Séries droites", "Stato-dynamique", "Rest-pause"],
                     params: {
                         "Séries droites": { series: 5, reps: "3-6", intensite: "30-60%", tempo: "X-0-X-0", recup: 150 },
+                        "Stato-dynamique": { series: 4, reps: "5", intensite: "40-60%", tempo: "2-2-X-0", recup: 180 },
                         "Rest-pause": { series: 4, reps: "4+2", intensite: "40-60%", tempo: "X-0-X-0", recup: 180 }
                     }
                 },
@@ -1711,7 +1782,7 @@
                     }
                 },
                 "Personnalisé": {
-                    formes: ["Séries droites", "Pyramidal ascendant", "Pyramidal descendant", "Dégressif", "Superset", "Biset", "Triset", "Circuit", "Rest-pause", "Séries longues"],
+                    formes: ["Séries droites", "Pyramidal ascendant", "Pyramidal descendant", "Stato-dynamique", "Dégressif", "Superset", "Biset", "Triset", "Circuit", "Rest-pause", "Séries longues"],
                     params: {
                         "Séries droites": { series: 4, reps: "10", intensite: "70%", tempo: "2-0-1-0", recup: 90 },
                         "Pyramidal ascendant": { series: 4, reps: "12-10-8-6", intensite: "Variable", tempo: "2-0-1-0", recup: 90 },
@@ -1722,7 +1793,8 @@
                         "Triset": { series: 3, reps: "10", intensite: "Variable", tempo: "2-0-1-0", recup: 120 },
                         "Circuit": { series: 3, reps: "12-15", intensite: "Variable", tempo: "2-0-1-0", recup: 30 },
                         "Rest-pause": { series: 3, reps: "8+3+2", intensite: "Variable", tempo: "2-0-1-0", recup: 150 },
-                        "Séries longues": { series: 3, reps: "20-30", intensite: "Variable", tempo: "2-0-1-0", recup: 60 }
+                        "Séries longues": { series: 3, reps: "20-30", intensite: "Variable", tempo: "2-0-1-0", recup: 60 },
+                        "Stato-dynamique": { series: 3, reps: "8", intensite: "Variable", tempo: "2-2-1-0", recup: 90 }
                     }
                 }
             },
@@ -1893,8 +1965,14 @@
                 {mot: "PDC (poids du corps)", def: "Exercice sans charge ajoutée : ton corps sert de charge.", ex: "Pompes, gainage, tractions"},
                 {mot: "1RM (répétition maximale)", def: "La charge la plus lourde que tu pourrais soulever une seule fois. En EPS, on ne la teste jamais : on l'estime à partir d'une série de 5 à 10 répétitions."},
                 {mot: "% du 1RM", def: "Une part de ton 1RM, pour choisir la bonne charge selon l'objectif.", ex: "1RM estimé 40 kg → 75 % = 30 kg"},
-                {mot: "Mobile (objectif)", def: "Ce que tu veux développer : tonification, volume (hypertrophie), puissance… Il fixe la charge, les reps et la récup."},
-                {mot: "Forme de travail", def: "La façon d'organiser les séries.", ex: "Séries droites, pyramide, circuit"},
+                {mot: "Mobile", def: "La raison personnelle pour laquelle tu t'entraînes : pourquoi tu fais de la musculation.", ex: "Me sentir bien dans mon corps, être plus forte pour mon métier"},
+                {mot: "Thème d'entraînement", def: "Ce que tu développes pour répondre à ton mobile : la forme, le volume ou la puissance. Il fixe la charge, les reps et la récup.", ex: "Forme = endurance musculaire, Volume = hypertrophie, Puissance = force explosive"},
+                {mot: "Méthode (forme de travail)", def: "La façon d'organiser tes séries.", ex: "Constante, pyramide, stato-dynamique"},
+                {mot: "Congestion", def: "Le muscle est gonflé, tendu et chaud. Premier signe que le muscle travaille bien."},
+                {mot: "Brûlure", def: "Sensation de chaleur qui pique dans le muscle en fin de série. Tu es dans la bonne zone d'effort."},
+                {mot: "Vide musculaire", def: "Tu ne peux plus faire une seule répétition correcte : le muscle est épuisé."},
+                {mot: "Régulation de la charge", def: "Changer sa charge (ou ses reps, sa récup) d'une série à l'autre selon ses ressentis.", ex: "Série 1 trop facile, pas de brûlure → je monte de 2,5 kg en série 2"},
+                {mot: "Charge de repli", def: "La charge que tu prévois de prendre si tu es fatiguée ou si la série est trop dure."},
                 {mot: "Tempo", def: "La vitesse du mouvement, en secondes : descente - pause - montée - pause.", ex: "3-1-1-0 = 3 s pour descendre, 1 s de pause, 1 s pour monter"},
                 {mot: "Amplitude", def: "La longueur du mouvement, du point de départ au point d'arrivée. Une amplitude complète et contrôlée rend l'exercice plus efficace."},
                 {mot: "Concentrique / excentrique", def: "Concentrique : le muscle se raccourcit (on pousse ou on tire). Excentrique : il s'allonge en freinant (on retient la charge)."},
@@ -2210,7 +2288,35 @@
             saveSessionHistory() { storage.save('sessionHistory', this.sessionHistory); }
             saveRMHistory() { storage.save('rmHistory', this.rmHistory); }
             saveCalculatedCharges() { storage.save('calculatedCharges', this.calculatedCharges); }
-            saveLive() { if (this.live) storage.save('seanceLive', this.live); else storage.remove('seanceLive'); }
+            saveLive() {
+                if (this.live) storage.save('seanceLive', this.live); else storage.remove('seanceLive');
+                // Verrou global : pendant une évaluation, aucune aide sur cet iPad (même en changeant de profil)
+                if (this.live && this.live.evaluation) localStorage.setItem('livret-eval-en-cours', this.currentUser);
+                else if (localStorage.getItem('livret-eval-en-cours') === this.currentUser) localStorage.removeItem('livret-eval-en-cours');
+            }
+
+            // Une évaluation est-elle en cours sur cet iPad ?
+            evalVerrou() {
+                if (this.live && this.live.evaluation) return true;
+                const p = localStorage.getItem('livret-eval-en-cours');
+                if (!p) return false;
+                try {
+                    const l = JSON.parse(localStorage.getItem(`user-${p}-seanceLive`) || 'null');
+                    if (getProfils().includes(p) && l && l.evaluation) return true;
+                } catch (e) {}
+                localStorage.removeItem('livret-eval-en-cours');
+                return false;
+            }
+
+            renderVerrou() {
+                return `
+                    <div class="text-center verrou" style="padding: 3rem 1rem;">
+                        <div style="font-size: 3.5rem;">🔒</div>
+                        <div class="text-white" style="font-weight: 700; font-size: 1.2rem;">Évaluation en cours</div>
+                        <div class="muted mt-2">Le cours, les vidéos et les outils de calcul sont fermés pendant l'évaluation.<br>Ils reviennent dès que la séance est enregistrée.</div>
+                        ${this.live && this.live.evaluation ? `<button class="btn btn-primary btn-lg mt-4" onclick="app.reprendreSeance()">▶️ Revenir à mon évaluation</button>` : ''}
+                    </div>`;
+            }
 
             setUserMode(mode) {
                 this.userMode = mode === 'avance' ? 'avance' : 'debutant';
@@ -2284,8 +2390,8 @@
                 const items = [
                     ['seances', '📝', 'Séances'],
                     ['historique', '📅', 'Historique'],
-                    ['progres', '📈', 'Progrès'],
-                    ['cours', '📚', 'Cours'],
+                    ['progres', this.evalVerrou() ? '🔒' : '📈', 'Progrès'],
+                    ['cours', this.evalVerrou() ? '🔒' : '📚', 'Cours'],
                     ['profil', '👤', 'Profil']
                 ];
                 return `<nav class="bottom-nav">${items.map(([id, ico, lbl]) => `
@@ -2298,6 +2404,7 @@
                 const titres = { seances: '📝 Mes séances', historique: '📅 Historique', progres: '📈 Mes progrès', cours: '📚 Cours', profil: '👤 Profil' };
                 let contenu = '';
                 if (this.tab === 'historique') contenu = this.renderHistorique();
+                else if ((this.tab === 'progres' || this.tab === 'cours') && this.evalVerrou()) contenu = this.renderVerrou();
                 else if (this.tab === 'progres') contenu = this.renderProgres();
                 else if (this.tab === 'cours') contenu = this.renderCoursTab();
                 else if (this.tab === 'profil') contenu = this.renderProfil();
@@ -2489,12 +2596,8 @@
             }
 
             formesPour(mobile) {
-                let formes = coursData.mobilesFormes[mobile]?.formes || ['Séries droites'];
-                if (this.userMode === 'debutant') {
-                    const simples = formes.filter(f => ['Séries droites', 'Circuit', 'Séries longues'].includes(f));
-                    formes = simples.length ? simples : ['Séries droites'];
-                }
-                return formes;
+                if (this.userMode === 'debutant') return Object.keys(METHODES_DEB[mobile] || { 'Séries droites': 1 });
+                return coursData.mobilesFormes[mobile]?.formes || ['Séries droites'];
             }
 
             niveauxPour(mobile) {
@@ -2518,7 +2621,18 @@
             }
 
             // Paramètres par défaut d'un exercice selon l'objectif (repris des réglages débutant / tableau mobiles × formes)
+            // Méthodes possibles pour un exercice (Débutant : gainage = constante, poids du corps = pas de pyramide)
+            methodesExo(mobile, nom) {
+                let f = this.formesPour(mobile);
+                if (this.userMode === 'debutant' && nom) {
+                    if (estTemps(nom)) f = ['Séries droites'];
+                    else if (estPDC(nom)) f = f.filter(x => x !== 'Pyramidal ascendant');
+                }
+                return f;
+            }
+
             defautsExercice(mobile, forme, nom) {
+                if (this.userMode === 'debutant' && nom && forme && !this.methodesExo(mobile, nom).includes(forme)) forme = 'Séries droites';
                 const d = this.defautsBase(mobile, forme);
                 if (nom && estPDC(nom)) { d.chargeNiveau = 'PDC'; d.chargeTheo = null; }
                 if (nom && estTemps(nom)) d.reps = /Circuit/.test(nom) ? '45' : ({ 'Endurance Musculaire': '40', 'Force Explosive': '20' }[mobile] || '30');
@@ -2527,13 +2641,13 @@
 
             defautsBase(mobile, forme) {
                 if (this.userMode === 'debutant') {
-                    const formes = this.formesPour(mobile);
+                    const methodes = METHODES_DEB[mobile] || METHODES_DEB['Hypertrophie'];
+                    const f = forme && methodes[forme] ? forme : 'Séries droites';
+                    const p = methodes[f];
                     return {
-                        forme: formes.includes('Séries droites') ? 'Séries droites' : formes[0],
-                        // Valeurs prises dans l'onglet Cours (mobiles)
-                        series: { 'Endurance Musculaire': 3, 'Hypertrophie': 3, 'Force Explosive': 4 }[mobile] || 3,
-                        reps: { 'Endurance Musculaire': '20', 'Hypertrophie': '10', 'Force Explosive': '5' }[mobile] || '10',
-                        recup: { 'Endurance Musculaire': 45, 'Hypertrophie': 90, 'Force Explosive': 180 }[mobile] || 90,
+                        forme: f,
+                        // Valeurs prises dans l'onglet Cours (thèmes et méthodes)
+                        series: p.series, reps: p.reps, recup: p.recup,
                         chargeNiveau: { 'Endurance Musculaire': 'Léger', 'Hypertrophie': 'Moyen', 'Force Explosive': 'Léger' }[mobile] || 'Moyen',
                         tempo: null
                     };
@@ -2570,12 +2684,13 @@
             }
 
             nouvelleSeance() {
+                if (this.evalVerrou()) { toast('🔒 Évaluation en cours : termine-la d\'abord'); return; }
                 const brouillon = storage.getJSON('sessionEnCours', null);
                 if (brouillon && brouillon.index === null && Array.isArray(brouillon.exercicesDetails) && (Date.now() - (brouillon.timestamp || 0)) < 24 * 3600 * 1000 && (brouillon.exercicesDetails.length || brouillon.nom)) {
                     this.draft = brouillon;
                     setTimeout(() => toast('Brouillon repris'), 50);
                 } else {
-                    this.draft = { index: null, id: uid(), nom: '', type: this.userMode === 'debutant' ? 'Hypertrophie' : 'Hypertrophie', exercicesDetails: [] };
+                    this.draft = { index: null, id: uid(), nom: '', type: 'Hypertrophie', exercicesDetails: [], evaluation: false, projet: { mobile: '', pourquoi: '' } };
                 }
                 this.pickerMuscle = null;
                 this.view = 'builder';
@@ -2583,8 +2698,9 @@
             }
 
             modifierSeance(index) {
+                if (this.evalVerrou()) { toast('🔒 Évaluation en cours : termine-la d\'abord'); return; }
                 const s = this.sessions[index];
-                this.draft = { index, id: s.id, nom: s.nom, type: s.type, exercicesDetails: JSON.parse(JSON.stringify(s.exercicesDetails || [])), dateCreation: s.dateCreation };
+                this.draft = { index, id: s.id, nom: s.nom, type: s.type, exercicesDetails: JSON.parse(JSON.stringify(s.exercicesDetails || [])), dateCreation: s.dateCreation, evaluation: !!s.evaluation, projet: { mobile: '', pourquoi: '', ...(s.projet || {}) } };
                 this.pickerMuscle = null;
                 this.view = 'builder';
                 this.go();
@@ -2680,7 +2796,9 @@
                 const d = this.draft;
                 if (d.exercicesDetails.length === 0) { toast('Ajoute au moins un exercice'); return; }
                 const nom = (d.nom || '').trim() || `Séance du ${new Date().toLocaleDateString('fr-FR')}`;
+                if (d.evaluation && (!(d.projet?.mobile || '').trim() || !(d.projet?.pourquoi || '').trim())) { toast('📝 Complète ton projet : ton mobile et pourquoi ce thème'); return; }
                 const session = { id: d.id || uid(), nom, type: d.type, exercicesDetails: d.exercicesDetails.map(e => ({ ...e, completed: false })), dateCreation: d.dateCreation || new Date().toISOString() };
+                if (d.evaluation) Object.assign(session, { evaluation: true, projet: { mobile: d.projet.mobile.trim(), pourquoi: d.projet.pourquoi.trim() } });
                 let index;
                 if (d.index !== null && d.index !== undefined && this.sessions[d.index]) {
                     this.sessions[d.index] = session;
@@ -2711,15 +2829,28 @@
                     <main class="container page">
                         <div class="box">
                             <input type="text" class="input" style="font-size: 1.15rem; font-weight: 600;" placeholder="Nom de la séance (ex : Haut du corps, Jambes...)" value="${esc(d.nom)}" oninput="app.setNomDraft(this.value)">
-                            <div class="text-white mt-4 mb-2" style="font-weight: 700;">${debutant ? '🎯 Objectif' : '🎯 Mobile d\'entraînement'}</div>
+                            <div class="text-white mt-4 mb-2" style="font-weight: 700;">🎯 Thème d'entraînement</div>
                             <div class="obj-chips">
                                 ${objectifs.map(o => `<button class="obj-chip ${d.type === o ? 'active' : ''}" onclick="app.setObjectif('${o}')">${this.getMobileLabel(o)}</button>`).join('')}
                             </div>
                             <div class="muted mt-2">
                                 ${debutant
-                                    ? `🔒 ${def.series} séries × ${def.reps} reps • récup ${def.recup} s • charge conseillée : ${this.libelleNiveau(def.chargeNiveau)}${d.type === 'Force Explosive' ? ' • montée la plus explosive possible' : ''}`
+                                    ? `${{ 'Endurance Musculaire': '🌿 Forme : tonifier, résister à la fatigue (endurance musculaire).', 'Hypertrophie': '💪 Volume : renforcer et développer le muscle (hypertrophie).', 'Force Explosive': '⚡ Puissance : être plus explosive, plus rapide (force explosive).', 'Personnalisé': '⚙️ Personnalisé : programme validé par ton professeur.' }[d.type] || ''}<br>🔒 Constante : ${def.series} séries × ${def.reps} reps • récup ${def.recup} s • charge conseillée : ${this.libelleNiveau(def.chargeNiveau)}${d.type === 'Force Explosive' ? ' • montée la plus explosive possible' : ''}`
                                     : `Par défaut : ${def.forme} • ${def.series} × ${def.reps} • ${def.intensite || ''} du 1RM • récup ${def.recup} s`}
                             </div>
+                        </div>
+
+                        <div class="box eval-box ${d.evaluation ? 'on' : ''}">
+                            <label class="eval-toggle"><input type="checkbox" ${d.evaluation ? 'checked' : ''} onchange="app.setEvaluation(this.checked)"> 📝 C'est ma séance d'évaluation</label>
+                            ${d.evaluation ? `
+                                <div class="eval-q">1. Mon mobile : pourquoi je m'entraîne ?</div>
+                                <div class="obj-chips">
+                                    ${MOBILES_PERSO.map((m, k) => `<button class="obj-chip ${d.projet.mobile === m ? 'active' : ''}" onclick="app.setMobilePerso(${k})">${m}</button>`).join('')}
+                                </div>
+                                <input class="input mt-2" placeholder="… ou écris ton propre mobile" value="${MOBILES_PERSO.includes(d.projet.mobile) ? '' : esc(d.projet.mobile)}" oninput="app.setProjet('mobile', this.value)">
+                                <div class="eval-q">2. Pourquoi ce thème (${this.getMobileLabel(d.type)}) pour mon mobile ?</div>
+                                <textarea class="input" rows="2" placeholder="Ex : je choisis la forme parce que je veux tenir plus longtemps debout au travail sans fatigue." oninput="app.setProjet('pourquoi', this.value)">${esc(d.projet.pourquoi)}</textarea>
+                                <div class="eval-q">3. Pour chaque exercice : ma charge prévue et ma charge de repli (si je suis fatiguée).</div>` : ''}
                         </div>
 
                         ${!debutant && (d.type === 'Force Maximale' || d.exercicesDetails.some(e => ['Rest-pause', 'Dégressif'].includes(e.forme))) ? `<div class="warn-banner">⚠️ <strong>Hors cadre EPS lycée.</strong> ${d.type === 'Force Maximale' ? 'La force maximale (85-100 % du max)' : 'Le rest-pause et le dégressif'} sont réservés aux pratiquants confirmés, avec une technique parfaite et un pareur. Demande l'accord de ton professeur.</div>` : ''}
@@ -2770,20 +2901,27 @@
                             <button class="btn-icon" onclick="app.retirerExo(${i})">🗑️</button>
                         </div>
                         ${debutant ? `
-                            <div class="locked">🔒 ${ex.series} séries × ${esc(ex.reps)} ${unite} • récup ${ex.recup} s${d.type === 'Force Explosive' && !temps ? ' • montée explosive' : ''}${pdc ? ' • 💪 Poids du corps' : (this.niveauxPour(d.type).length === 1 ? ' • ' + this.libelleNiveau(ex.chargeNiveau) : '')}</div>
-                            ${pdc || this.niveauxPour(d.type).length === 1 ? '' : `<div class="fields">
-                                <div class="field" style="grid-column: 1 / -1; max-width: 320px;">
+                            ${(() => { const m = this.methodesExo(d.type, ex.nom); const niv = !pdc && this.niveauxPour(d.type).length > 1; return m.length > 1 || niv ? `<div class="fields">
+                                ${m.length > 1 ? `<div class="field" style="grid-column: span 2;">
+                                    <label>Méthode</label>
+                                    <select class="input" onchange="app.majExo(${i}, 'forme', this.value)">
+                                        ${m.map(f => `<option value="${f}" ${ex.forme === f ? 'selected' : ''}>${nomMethode(f)}</option>`).join('')}
+                                    </select>
+                                </div>` : ''}
+                                ${niv ? `<div class="field" style="grid-column: span 2;">
                                     <label>Niveau de charge</label>
                                     <select class="input" onchange="app.majExo(${i}, 'chargeNiveau', this.value)">
                                         ${this.niveauxPour(d.type).map(n => `<option value="${n}" ${ex.chargeNiveau === n ? 'selected' : ''}>${this.libelleNiveau(n)}</option>`).join('')}
                                     </select>
-                                </div>
-                            </div>`}` : `
+                                </div>` : ''}
+                            </div>` : ''; })()}
+                            <div class="locked">🔒 ${nomMethode(ex.forme)} : ${ex.series} séries × ${esc(ex.reps)} ${unite} • récup ${ex.recup} s${d.type === 'Force Explosive' && !temps ? ' • montée explosive' : ''}${pdc ? ' • 💪 Poids du corps' : (this.niveauxPour(d.type).length === 1 ? ' • ' + this.libelleNiveau(ex.chargeNiveau) : '')}${ex.forme && ex.forme !== 'Séries droites' ? `<div class="aide-methode">👉 ${aideMethode(ex.forme, d.type)}</div>` : ''}</div>
+                            ${this.renderEvalExo(ex, i, d, pdc || temps)}` : `
                             <div class="fields">
                                 <div class="field" style="grid-column: span 2;">
                                     <label>Forme</label>
                                     <select class="input" onchange="app.majExo(${i}, 'forme', this.value)">
-                                        ${formes.map(f => `<option value="${f}" ${ex.forme === f ? 'selected' : ''}>${f}</option>`).join('')}
+                                        ${formes.map(f => `<option value="${f}" ${ex.forme === f ? 'selected' : ''}>${f === 'Séries droites' ? 'Séries droites (constante)' : f}</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="field">
@@ -2796,8 +2934,26 @@
                                 <div class="field"><label>Tempo</label><input class="input" value="${esc(ex.tempo || '')}" placeholder="3-1-1" onchange="app.majExo(${i}, 'tempo', this.value)"></div>
                             </div>
                             ${rm ? `<div class="muted mt-2" style="font-size: 0.82rem;">🎯 1RM estimé : ${rm} kg</div>` : ''}
-                            ${this.aideGroupe(ex, i, d)}`}
+                            ${this.aideGroupe(ex, i, d)}
+                            ${this.renderEvalExo(ex, i, d, pdc || temps)}`}
                     </div>`;
+            }
+
+            setEvaluation(v) { this.draft.evaluation = v; this.draft.projet = this.draft.projet || { mobile: '', pourquoi: '' }; this.saveDraft(); this.render(); }
+            setMobilePerso(k) { this.draft.projet.mobile = MOBILES_PERSO[k]; this.saveDraft(); this.render(); }
+            setProjet(champ, v) {
+                this.draft.projet[champ] = v;
+                if (champ === 'mobile') document.querySelectorAll('.eval-box .obj-chip').forEach(b => b.classList.remove('active'));
+                this.saveDraft();
+            }
+
+            renderEvalExo(ex, i, d, sansCharge) {
+                if (!d.evaluation) return '';
+                const debutant = this.userMode === 'debutant';
+                return `<div class="fields eval-fields">
+                    ${sansCharge ? '' : (debutant ? `<div class="field"><label>Charge prévue (kg)</label><input class="input" type="number" step="0.5" inputmode="decimal" value="${ex.chargeTheo ?? ''}" placeholder="kg" onchange="app.majExo(${i}, 'chargeTheo', this.value)"></div>` : '')}
+                    <div class="field" style="grid-column: span ${sansCharge ? 4 : 2};"><label>${sansCharge ? 'Si c\'est trop dur, je fais :' : 'Charge de repli (kg)'}</label><input class="input" ${sansCharge ? '' : 'type="number" step="0.5" inputmode="decimal"'} value="${esc(ex.repli || '')}" placeholder="${sansCharge ? 'ex : pompes sur les genoux' : 'kg'}" onchange="app.majExo(${i}, 'repli', this.value)"></div>
+                </div>`;
             }
 
             aideGroupe(ex, i, d) {
@@ -2835,17 +2991,19 @@
                 if (this.live && !confirm(`Une séance est déjà en cours (${this.live.nom}). La remplacer ?`)) return;
                 this.live = {
                     sessionId: s.id, nom: s.nom, type: s.type, startedAt: Date.now(),
+                    evaluation: !!s.evaluation, projet: s.projet || null,
                     echauffement: { cardio: false, mobilite: false, series: false },
                     exercices: (s.exercicesDetails || []).map(ex => {
                         const n = parseInt(ex.series) || 3;
                         const cibles = this.repsCibles(ex.reps, n);
                         const prev = this.dernierePerf(ex.nom);
                         const kgDefaut = estPDC(ex.nom) ? '' : (ex.chargeReelle || ex.chargeTheo || '');
+                        const prevu = s.evaluation && !estPDC(ex.nom) && ex.chargeTheo;
                         return {
                             nom: ex.nom, muscle: ex.muscle, forme: ex.forme, repsCible: ex.reps, recup: parseInt(ex.recup) || 90,
-                            tempo: ex.tempo, chargeNiveau: ex.chargeNiveau,
+                            tempo: ex.tempo, chargeNiveau: ex.chargeNiveau, repli: ex.repli || '', chargePrevue: prevu || null,
                             series: Array.from({ length: n }, (_, k) => ({
-                                kg: !estPDC(ex.nom) && prev && prev.series[k] && prev.series[k].kg !== '' && prev.series[k].kg !== null ? prev.series[k].kg : kgDefaut,
+                                kg: prevu ? prevu : !estPDC(ex.nom) && prev && prev.series[k] && prev.series[k].kg !== '' && prev.series[k].kg !== null ? prev.series[k].kg : kgDefaut,
                                 reps: /^\d+$/.test(cibles[k]) ? cibles[k] : '',
                                 cible: cibles[k],
                                 done: false
@@ -2957,11 +3115,15 @@
                 if (serie.done) {
                     if (!serie.reps && /^\d+$/.test(String(serie.cible))) serie.reps = serie.cible;
                     // Les séries suivantes reprennent la charge si elles sont vides
-                    ex.series.forEach((x, k) => { if (k > s && !x.done && (x.kg === '' || x.kg === null)) x.kg = serie.kg; });
+                    // Si l'élève a changé sa charge (régulation), les séries suivantes prévues à l'ancienne charge suivent
+                    const avant = s > 0 ? String(ex.series[s - 1].kg ?? '') : null;
+                    const regule = avant !== null && avant !== '' && String(serie.kg) !== avant && ex.forme !== 'Pyramidal ascendant' && ex.forme !== 'Pyramidal descendant';
+                    ex.series.forEach((x, k) => { if (k > s && !x.done && (x.kg === '' || x.kg === null || (regule && String(x.kg) === avant))) x.kg = serie.kg; });
                     const e0 = this.live.echauffement;
                     if (this.userMode === 'debutant' && !(e0.cardio && e0.mobilite && e0.series) && this.compterSeries(this.live).faites === 1) {
                         toast('🔥 N\'oublie pas ton échauffement !');
                     }
+                    if (this.live.evaluation && s === 0 && ex.series.length > 1 && !estTemps(ex.nom)) setTimeout(() => { if (this.view === 'live') toast('Touche ton ressenti. Série 2 : garde, monte ou baisse ta charge selon ce que tu as senti.'); }, 2600);
                     const c = this.compterSeries(this.live);
                     const g = this.groupes(this.live.exercices).find(x => x.idx.includes(e));
                     const dernierDuGroupe = e === g.idx[g.idx.length - 1];
@@ -3003,17 +3165,23 @@
                 const e0 = L.echauffement;
                 const echaufOk = e0.cardio && e0.mobilite && e0.series;
                 return `
-                    ${this.renderTopbar(`🏋️ ${esc(L.nom)}`, `⏱️ <span id="elapsed">${this.formatDuree(Date.now() - L.startedAt)}</span> • ${faites}/${total} séries`,
+                    ${this.renderTopbar(`${L.evaluation ? '📝' : '🏋️'} ${esc(L.nom)}`, `${L.evaluation ? '<strong>Évaluation</strong> • ' : ''}⏱️ <span id="elapsed">${this.formatDuree(Date.now() - L.startedAt)}</span> • ${faites}/${total} séries`,
                         `<div class="row"><button class="btn btn-ghost" onclick="app.quitterLive()">←</button><button class="btn btn-success" onclick="app.terminerSeance()">Terminer</button></div>`)}
                     <main class="container page page-live">
+                        ${L.evaluation ? `
+                            <div class="box eval-box on">
+                                <div><strong>🎯 Mon mobile :</strong> ${esc(L.projet?.mobile || '')}</div>
+                                <div><strong>Thème :</strong> ${this.getMobileLabel(L.type)}</div>
+                                <div class="eval-legende">Après chaque série, touche ton ressenti : ${RESSENTIS_MUSC.map(r => `${r.emo} <strong>${r.label}</strong> = ${r.aide}`).join(' • ')}</div>
+                            </div>` : ''}
                         <div class="box echauf">
                             ${this.guide ? this.renderGuide() : echaufOk ? `<div class="text-white" style="font-weight: 700;">✅ Échauffement fait</div>` : `
                                 <div class="box-title">🔥 Échauffement ${debutant ? 'obligatoire' : ''}</div>
                                 <label><input type="checkbox" ${e0.cardio ? 'checked' : ''} onchange="app.setEchauffement('cardio', this.checked)"> 🏃 Cardio léger (5-10 min) : vélo, tapis, rameur...</label>
                                 <label><input type="checkbox" ${e0.mobilite ? 'checked' : ''} onchange="app.setEchauffement('mobilite', this.checked)"> 🤸 Mobilité articulaire : rotations, étirements dynamiques</label>
                                 <label><input type="checkbox" ${e0.series ? 'checked' : ''} onchange="app.setEchauffement('series', this.checked)"> 💪 Séries d'échauffement sur ton 1er exercice chargé</label>
-                                ${this.seriesEchauffement(L)}
-                                ${!(e0.cardio && e0.mobilite) ? `<button class="btn btn-primary btn-block mt-2" onclick="app.lancerGuide()">▶ Échauffement guidé (5 min)</button>` : ''}`}
+                                ${L.evaluation ? '' : this.seriesEchauffement(L)}
+                                ${!(e0.cardio && e0.mobilite) && !L.evaluation ? `<button class="btn btn-primary btn-block mt-2" onclick="app.lancerGuide()">▶ Échauffement guidé (5 min)</button>` : ''}`}
                         </div>
 
                         ${this.groupes(L.exercices).map(g => g.forme ? this.renderLiveGroupe(g) : this.renderLiveExo(L.exercices[g.idx[0]], g.idx[0])).join('')}
@@ -3064,23 +3232,26 @@
                 const recupTxt = lettre ? (this.groupes(this.live.exercices).find(x => x.idx.includes(e)).idx.slice(-1)[0] === e ? (ex.forme === 'Circuit' ? 'puis repos' : `puis récup ${ex.recup} s`) : (ex.forme === 'Circuit' ? 'enchaîne' : 'sans repos')) : `récup ${ex.recup} s`;
                 const cible = `${ex.series.length} × ${esc(ex.repsCible)}${temps ? ' s' : ''} • ${recupTxt}${niveau ? ' • ' + niveau : ''}${ex.tempo && !debutant && !temps ? ' • tempo ' + esc(ex.tempo) : ''}${this.live.type === 'Force Explosive' && !temps ? ' • ⚡ montée explosive' : ''}`;
                 const perf = (x) => temps ? `${x.reps} s` : `${kgTxt(x.kg, ex.nom)} × ${x.reps}`;
-                const conseil = fini ? this.conseilCharge(ex) : null;
+                const evalMode = !!this.live.evaluation;
+                const conseil = fini && !evalMode ? this.conseilCharge(ex) : null;
+                const aide = ex.forme && ex.forme !== 'Séries droites' && !lettre && !evalMode ? aideMethode(ex.forme, this.live.type) : '';
                 return `
                     <div class="live-ex ${fini ? 'done' : ''}">
                         <div class="row-between">
                             <div class="grow">
                                 <div class="live-ex-name">${fini ? '✅ ' : ''}${lettre ? `<span class="lettre">${lettre}</span>` : `${e + 1}. `}${esc(ex.nom)}</div>
-                                <div class="live-cible">${cible}</div>
+                                <div class="live-cible">${ex.forme && !lettre ? `<strong>${nomMethode(ex.forme)}</strong> • ` : ''}${cible}${evalMode && ex.repli ? ` • 🔁 repli : ${esc(ex.repli)}${/^[\d.,]+$/.test(ex.repli) ? ' kg' : ''}` : ''}</div>
+                                ${aide ? `<div class="aide-methode">👉 ${aide}</div>` : ''}
                             </div>
-                            ${video ? `<a class="btn-icon" href="${video}" target="_blank" rel="noopener" style="text-decoration:none;">🎥</a>` : ''}
+                            ${video && !evalMode ? `<a class="btn-icon" href="${video}" target="_blank" rel="noopener" style="text-decoration:none;">🎥</a>` : ''}
                         </div>
-                        ${consignes ? `
+                        ${consignes && !evalMode ? `
                             <details class="consignes" ${debutant && !commence ? 'open' : ''}>
                                 <summary>⚠️ Consignes de sécurité</summary>
                                 ${consignes.map(c => `<div>${c}</div>`).join('')}
                             </details>` : ''}
                         ${prev ? `<div class="muted mt-2" style="font-size: 0.9rem;">🕐 Dernière fois (${new Date(prev.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}) : ${prev.series.filter(s => s.done).map(perf).join(' • ')}</div>` : ''}
-                        ${prev && prev.conseil && !commence ? `<div class="conseil">💡 Conseil de la dernière fois : ${prev.conseil}</div>` : ''}
+                        ${prev && prev.conseil && !commence && !evalMode ? `<div class="conseil">💡 Conseil de la dernière fois : ${prev.conseil}</div>` : ''}
                         <table class="sets">
                             <thead><tr><th>Série</th><th>Précédent</th><th>${temps ? 'Chrono' : (pdc ? 'Charge' : 'kg')}</th><th>${temps ? 'Secondes' : 'Reps'}</th><th>✓</th></tr></thead>
                             <tbody>
@@ -3097,7 +3268,8 @@
                                         <td>${celluleCharge}</td>
                                         <td><input class="set-input" id="reps-${e}-${k}" type="number" inputmode="numeric" value="${esc(s.reps)}" placeholder="${esc(s.cible)}" onchange="app.majSerie(${e}, ${k}, 'reps', this.value)"></td>
                                         <td><button class="set-check ${s.done ? 'on' : ''}" onclick="app.cocherSerie(${e}, ${k})">✓</button></td>
-                                    </tr>`;
+                                    </tr>${evalMode && s.done ? `
+                                    <tr class="ress-row"><td colspan="5"><div class="ress-chips" id="ress-${e}-${k}">${RESSENTIS_MUSC.map(r => `<button class="ress-chip ${s.ressenti === r.id ? 'on' : ''}" data-id="${r.id}" onclick="app.setRessentiSerie(${e}, ${k}, '${r.id}')">${r.emo} ${r.label}</button>`).join('')}</div></td></tr>` : ''}`;
                                 }).join('')}
                             </tbody>
                         </table>
@@ -3107,6 +3279,13 @@
                             <button class="btn-icon" onclick="app.retirerSerie(${e})" ${ex.series.length <= 1 ? 'disabled style="opacity:0.3"' : ''}>− Série</button>
                         </div>
                     </div>`;
+            }
+
+            setRessentiSerie(e, k, id) {
+                const serie = this.live.exercices[e].series[k];
+                serie.ressenti = serie.ressenti === id ? null : id;
+                this.saveLive();
+                document.querySelectorAll(`#ress-${e}-${k} .ress-chip`).forEach(b => b.classList.toggle('on', b.dataset.id === serie.ressenti));
             }
 
             // Conseil simple pour la prochaine séance, à partir des répétitions faites
@@ -3284,7 +3463,7 @@
                 }
                 this.stopRest();
                 this.chrono = null; this.guide = null;
-                this.bilan = { ressenti: null, rpe: null, etirFaits: [] };
+                this.bilan = { ressenti: null, rpe: null, etirFaits: [], analyse: {} };
                 this.view = 'bilan';
                 this.go();
             }
@@ -3348,6 +3527,7 @@
                                     <span class="muted">${ex.series.filter(s => s.done).map(s => estTemps(ex.nom) ? `${s.reps} s` : `${kgTxt(s.kg, ex.nom)} × ${s.reps}`).join(' • ') || '—'}</span>
                                 </div>`).join('')}
                         </div>
+                        ${L.evaluation ? this.renderAnalyse(L) : ''}
                         <div class="box">
                             <div class="box-title">💬 Comment as-tu trouvé la séance ?</div>
                             ${debutant ? `
@@ -3378,6 +3558,28 @@
                     </main>`;
             }
 
+            renderAnalyse(L) {
+                const A = this.bilan.analyse;
+                const chip = (e, champ, val, txt) => `<button class="ress-chip ${(A[e] || {})[champ] === val ? 'on' : ''}" data-v="${val}" onclick="app.setAnalyse(${e}, '${champ}', '${val}', this)">${txt}</button>`;
+                return `
+                    <div class="box eval-box on">
+                        <div class="box-title">🧠 Mon analyse (évaluation)</div>
+                        ${L.exercices.map((ex, e) => !ex.series.some(s => s.done) ? '' : `
+                            <div class="analyse-exo">
+                                <div class="text-white" style="font-weight: 700;">${esc(ex.nom)}</div>
+                                <div class="analyse-q">Ma charge était :</div>
+                                <div class="ress-chips" data-champ="charge-${e}">${chip(e, 'charge', 'legere', '🪶 Trop légère')}${chip(e, 'charge', 'adaptee', '✅ Adaptée')}${chip(e, 'charge', 'lourde', '🧱 Trop lourde')}</div>
+                                <div class="analyse-q">La prochaine fois :</div>
+                                <div class="ress-chips" data-champ="change-${e}">${chip(e, 'change', 'monter', '⬆️ Monter la charge')}${chip(e, 'change', 'baisser', '⬇️ Baisser la charge')}${chip(e, 'change', 'reps', '🔢 Changer les reps')}${chip(e, 'change', 'recup', '⏱️ Changer la récup')}${chip(e, 'change', 'rien', '👌 Ne rien changer')}</div>
+                            </div>`).join('')}
+                    </div>`;
+            }
+
+            setAnalyse(e, champ, val, btn) {
+                this.bilan.analyse[e] = { ...(this.bilan.analyse[e] || {}), [champ]: val };
+                btn.parentElement.querySelectorAll('.ress-chip').forEach(b => b.classList.toggle('on', b.dataset.v === val));
+            }
+
             etirementsSeance(L) {
                 const muscles = [...new Set(L.exercices.map(e => e.muscle).filter(m => ETIREMENTS[m]))];
                 ['Quadriceps', 'Dorsaux', 'Pectoraux', 'Ischio-jambiers'].forEach(m => { if (muscles.length < 3 && !muscles.includes(m)) muscles.push(m); });
@@ -3394,12 +3596,14 @@
             }
 
             enregistrerBilan() {
-                if (!this.bilan.rpe) { toast(this.userMode === 'debutant' ? 'Choisis ton ressenti 🙂' : 'Indique ton RPE'); return; }
                 const L = this.live;
+                if (L.evaluation && L.exercices.some((ex, e) => ex.series.some(s => s.done) && !(this.bilan.analyse[e]?.charge && this.bilan.analyse[e]?.change))) { toast('🧠 Termine ton analyse pour chaque exercice'); return; }
+                if (!this.bilan.rpe) { toast(this.userMode === 'debutant' ? 'Choisis ton ressenti 🙂' : 'Indique ton RPE'); return; }
                 const { faites, total } = this.compterSeries(L);
-                const exercices = L.exercices.map(ex => ({
-                    nom: ex.nom, muscle: ex.muscle, forme: ex.forme, repsCible: ex.repsCible, chargeNiveau: ex.chargeNiveau,
-                    series: ex.series.map(s => ({ kg: s.kg === '' || s.kg === null ? null : parseFloat(s.kg), reps: parseInt(s.reps) || 0, done: !!s.done })),
+                const exercices = L.exercices.map((ex, e) => ({
+                    nom: ex.nom, muscle: ex.muscle, forme: ex.forme, repsCible: ex.repsCible, chargeNiveau: ex.chargeNiveau, recup: ex.recup,
+                    ...(L.evaluation ? { repli: ex.repli || '', chargePrevue: ex.chargePrevue || null, analyse: this.bilan.analyse[e] || null } : {}),
+                    series: ex.series.map(s => ({ kg: s.kg === '' || s.kg === null ? null : parseFloat(s.kg), reps: parseInt(s.reps) || 0, done: !!s.done, ...(s.ressenti ? { ressenti: s.ressenti } : {}) })),
                     conseil: this.conseilCharge(ex),
                     evolution: (this.comparer(ex) || {}).txt || null
                 }));
@@ -3414,6 +3618,7 @@
                     echauffement: L.echauffement.cardio && L.echauffement.mobilite && L.echauffement.series,
                     rpe: this.bilan.rpe, ressenti: this.bilan.ressenti,
                     retourCalme: (this.bilan.etirFaits || []).length,
+                    ...(L.evaluation ? { evaluation: true, projet: L.projet } : {}),
                     notes: (document.getElementById('session-notes')?.value || '').trim()
                 };
                 this.sessionHistory.push(entry);
@@ -3462,7 +3667,7 @@
                         <div class="hist-card" onclick="app.toggleHistory('${h.id}')">
                             <div class="row-between">
                                 <div class="grow">
-                                    <div class="text-white" style="font-weight: 700; font-size: 1.05rem;">${esc(h.sessionName || 'Séance')}</div>
+                                    <div class="text-white" style="font-weight: 700; font-size: 1.05rem;">${h.evaluation ? '<span class="tag-eval">📝 Évaluation</span> ' : ''}${esc(h.sessionName || 'Séance')}</div>
                                     <div class="muted">${new Date(h.completedAt).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} • ${resume}</div>
                                 </div>
                                 ${ressenti}
@@ -3473,12 +3678,13 @@
                                     ${(h.exercices || []).map(ex => `
                                         <div style="padding: 0.3rem 0;">
                                             <div class="text-white" style="font-weight: 600;">${esc(ex.nom)}${ex.evolution ? `<span class="progres-chip ${/^\+/.test(ex.evolution) ? 'up' : /^-/.test(ex.evolution) ? 'down' : 'eq'}">${ex.evolution}</span>` : ''}</div>
-                                            <div class="muted">${ex.series.map(s => s.done ? (estTemps(ex.nom) ? `${s.reps} s` : `${kgTxt(s.kg, ex.nom)} × ${s.reps}`) : '<span style="opacity:0.5">non faite</span>').join(' • ')}</div>
-                                            ${ex.conseil ? `<div class="conseil" style="margin-top:0.3rem;">💡 ${ex.conseil}</div>` : ''}
+                                            <div class="muted">${ex.series.map(s => s.done ? (estTemps(ex.nom) ? `${s.reps} s` : `${kgTxt(s.kg, ex.nom)} × ${s.reps}`) + (s.ressenti ? ' ' + (RESSENTIS_MUSC.find(r => r.id === s.ressenti) || {}).emo : '') : '<span style="opacity:0.5">non faite</span>').join(' • ')}</div>
+                                            ${ex.conseil && !h.evaluation ? `<div class="conseil" style="margin-top:0.3rem;">💡 ${ex.conseil}</div>` : ''}
                                         </div>`).join('')}
                                     ${h.notes ? `<div class="mt-2 text-white" style="font-style: italic; opacity: 0.9;">💬 « ${esc(h.notes)} »</div>` : ''}
                                     <div class="row mt-4">
-                                        ${h.exercices ? `<button class="btn btn-success" onclick="app.exportBilanPDF('${h.id}', true)">📤 Envoyer mon bilan</button><button class="btn btn-secondary" onclick="app.exportBilanPDF('${h.id}')">📄 PDF</button>` : ''}
+                                        ${h.evaluation ? `<button class="btn btn-success" onclick="app.exportEvalPDF('${h.id}', true)">📤 Envoyer mon évaluation</button><button class="btn btn-secondary" onclick="app.exportEvalPDF('${h.id}')">📄 PDF</button>`
+                                            : h.exercices ? `<button class="btn btn-success" onclick="app.exportBilanPDF('${h.id}', true)">📤 Envoyer mon bilan</button><button class="btn btn-secondary" onclick="app.exportBilanPDF('${h.id}')">📄 PDF</button>` : ''}
                                         <button class="btn btn-ghost" onclick="app.supprimerHistorique('${h.id}')">🗑️ Supprimer</button>
                                     </div>
                                 </div>` : ''}
@@ -3532,6 +3738,82 @@
                 const nomFichier = `bilan_${this.nomFichierEleve()}_${date.replace(/\//g, '-')}.pdf`;
                 if (envoyer) this.partagerFichier(doc.output('blob'), nomFichier, 'application/pdf', `Bilan de séance - ${this.currentUser}`);
                 else doc.save(nomFichier);
+            }
+
+            // PDF de la séance d'évaluation : les 3 temps de l'épreuve (référentiel CA5 CAP)
+            exportEvalPDF(id, envoyer = false) {
+                const h = this.sessionHistory.find(x => x.id === id);
+                if (!h) return;
+                if (typeof window.jspdf === 'undefined') { toast('⚠️ Module PDF non chargé', 'error'); return; }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const propre = (t) => String(t || '').replace(/[^\x20-\xFF\n]/g, '').replace(/\s+/g, ' ').trim();
+                const date = new Date(h.completedAt).toLocaleDateString('fr-FR');
+                let y = 18;
+                const saut = (hh) => { if (y + hh > 282) { doc.addPage(); y = 18; } };
+                const titre = (t) => { saut(16); y += 3; doc.setFillColor(237, 233, 254); doc.rect(15, y - 5, 180, 8, 'F'); doc.setFontSize(12); doc.setTextColor(46, 16, 101); doc.text(t, 18, y); y += 9; };
+                const ligne = (t, x = 18, taille = 10, coul = [40, 50, 70]) => { doc.setFontSize(taille); doc.setTextColor(...coul); doc.splitTextToSize(propre(t), 192 - x).forEach(l => { saut(5); doc.text(l, x, y); y += 5; }); };
+                const ress = (id) => (RESSENTIS_MUSC.find(r => r.id === id) || {}).label || '-';
+                const ANA = { legere: 'trop légère', adaptee: 'adaptée', lourde: 'trop lourde', monter: 'monter la charge', baisser: 'baisser la charge', reps: 'changer les répétitions', recup: 'changer la récupération', rien: 'ne rien changer' };
+                doc.setFontSize(18); doc.setTextColor(19, 40, 77);
+                doc.text('Évaluation CA5 - Musculation (CAP)', 105, y, { align: 'center' });
+                y += 8; doc.setFontSize(13); doc.setTextColor(15, 23, 42);
+                doc.text(propre(this.currentUser), 105, y, { align: 'center' });
+                y += 6; doc.setFontSize(10); doc.setTextColor(100, 116, 139);
+                doc.text(`${date}  -  ${propre(h.sessionName)}  -  durée ${h.dureeMin ?? '-'} min`, 105, y, { align: 'center' });
+                y += 4;
+
+                titre('Temps 1 - Mon projet');
+                ligne(`Mon mobile : ${h.projet?.mobile || '-'}`);
+                ligne(`Thème d'entraînement : ${this.getMobileLabel(h.type)}`);
+                ligne(`Pourquoi ce thème : ${h.projet?.pourquoi || '-'}`);
+                y += 1;
+                doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+                saut(6); doc.text('Exercice', 18, y); doc.text('Méthode', 74, y); doc.text('Prévu', 104, y); doc.text('Récup', 140, y); doc.text('Repli', 154, y); y += 5;
+                doc.setTextColor(40, 50, 70);
+                (h.exercices || []).forEach(ex => {
+                    saut(6);
+                    const t = estTemps(ex.nom);
+                    doc.text(doc.splitTextToSize(propre(ex.nom), 54)[0], 18, y);
+                    doc.text(propre(nomMethode(ex.forme)), 74, y);
+                    doc.text(`${ex.series.length} x ${propre(ex.repsCible)}${t ? ' s' : ''}${ex.chargePrevue ? ' à ' + String(ex.chargePrevue).replace('.', ',') + ' kg' : ''}`, 104, y);
+                    doc.text(ex.recup ? ex.recup + ' s' : '-', 140, y);
+                    const repli = doc.splitTextToSize(ex.repli ? propre(ex.repli) + (/^[\d.,]+$/.test(ex.repli) ? ' kg' : '') : '-', 40);
+                    repli.forEach((l, k) => doc.text(l, 154, y + k * 4.2));
+                    y += 5.5 + (repli.length - 1) * 4.2;
+                });
+
+                titre('Temps 2 - Ma séance réalisée');
+                ligne(`Échauffement : ${h.echauffement ? 'fait' : 'non coché'}    Séries faites : ${h.seriesFaites}/${h.seriesTotal}    Retour au calme : ${h.retourCalme ? 'fait' : 'non'}`, 18, 9, [100, 116, 139]);
+                (h.exercices || []).forEach(ex => {
+                    saut(14); y += 1;
+                    doc.setFontSize(11); doc.setTextColor(15, 23, 42); doc.text(propre(ex.nom), 18, y); y += 5;
+                    const t = estTemps(ex.nom);
+                    ex.series.forEach((s, k) => {
+                        saut(5);
+                        doc.setFontSize(9); doc.setTextColor(60, 70, 90);
+                        doc.text(`S${k + 1}`, 22, y);
+                        doc.text(s.done ? (t ? `${s.reps} s` : `${kgTxt(s.kg, ex.nom)} x ${s.reps}`) : 'non faite', 32, y);
+                        doc.text(s.done ? `ressenti : ${ress(s.ressenti)}` : '', 75, y);
+                        const p = ex.series[k - 1];
+                        if (k > 0 && s.done && p && p.done && !t && (p.kg || 0) !== (s.kg || 0) && s.kg) { doc.setTextColor(180, 83, 9); doc.text(`charge modifiée : ${kgTxt(p.kg, ex.nom)} -> ${kgTxt(s.kg, ex.nom)}`, 125, y); }
+                        y += 4.6;
+                    });
+                });
+
+                titre('Temps 3 - Mon analyse');
+                (h.exercices || []).forEach(ex => {
+                    if (!ex.analyse) return;
+                    ligne(`${ex.nom} : charge ${ANA[ex.analyse.charge] || '-'}  ->  la prochaine fois : ${ANA[ex.analyse.change] || '-'}`, 18, 10);
+                });
+                const r = RESSENTIS.find(x => x.id === h.ressenti);
+                ligne(`Ressenti global : ${r ? r.label : 'RPE ' + h.rpe + '/10'}`);
+                if (h.notes) ligne(`Mes remarques : ${h.notes}`);
+                doc.setFontSize(8); doc.setTextColor(100, 116, 139);
+                doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')} - Musculation EPS`, 105, 290, { align: 'center' });
+                const nom = `evaluation_${this.nomFichierEleve()}_${date.replace(/\//g, '-')}.pdf`;
+                if (envoyer) this.partagerFichier(doc.output('blob'), nom, 'application/pdf', `Évaluation musculation - ${this.currentUser}`);
+                else doc.save(nom);
             }
 
             // Bilan de cycle : une synthèse PDF que l'élève envoie au professeur
@@ -3921,8 +4203,8 @@
                 // Retourne le libellé selon le mode (débutant = simplifié, avancé = technique)
                 if (this.userMode === 'debutant') {
                     const labels = {
-                        'Endurance Musculaire': '💪 Tonification musculaire',
-                        'Hypertrophie': '🏋️ Hypertrophie',
+                        'Endurance Musculaire': '🌿 Forme',
+                        'Hypertrophie': '💪 Volume',
                         'Force Explosive': '⚡ Puissance',
                         'Force Maximale': '💪 Force Maximale', // Au cas où (anciennes séances)
                         'Endurance de Force': '🔥 Endurance de Force', // Au cas où
@@ -3933,10 +4215,10 @@
                     // Mode avancé = textes techniques
                     const labels = {
                         'Force Maximale': '💪 Force Maximale',
-                        'Force Explosive': '⚡ Force Explosive',
-                        'Hypertrophie': '🏋️ Hypertrophie',
+                        'Force Explosive': '⚡ Force Explosive (puissance)',
+                        'Hypertrophie': '🏋️ Hypertrophie (volume)',
                         'Endurance de Force': '🔥 Endurance de Force',
-                        'Endurance Musculaire': '🏃 Endurance Musculaire',
+                        'Endurance Musculaire': '🏃 Endurance Musculaire (forme)',
                         'Personnalisé': '⚙️ Personnalisé'
                     };
                     return labels[mobileValue] || mobileValue;
@@ -4260,7 +4542,7 @@
                     <div>
                         <div class="flex gap-2 mb-4" style="overflow-x: auto;">
                             <button class="sub-tab-btn ${this.currentCoursTab === 'principes' ? 'active' : ''}" onclick="app.switchCoursTab('principes')">📖 Principes</button>
-                            <button class="sub-tab-btn ${this.currentCoursTab === 'mobiles' ? 'active' : ''}" onclick="app.switchCoursTab('mobiles')">🎯 Mobiles</button>
+                            <button class="sub-tab-btn ${this.currentCoursTab === 'mobiles' ? 'active' : ''}" onclick="app.switchCoursTab('mobiles')">🎯 Thèmes</button>
                             <button class="sub-tab-btn ${this.currentCoursTab === 'formes' ? 'active' : ''}" onclick="app.switchCoursTab('formes')">🏋️ Formes</button>
                             <button class="sub-tab-btn ${this.currentCoursTab === 'contractions' ? 'active' : ''}" onclick="app.switchCoursTab('contractions')">💪 Contractions</button>
                             <button class="sub-tab-btn ${this.currentCoursTab === 'hygiene' ? 'active' : ''}" onclick="app.switchCoursTab('hygiene')">🧘 Hygiène</button>
@@ -4327,9 +4609,18 @@
             }
 
             renderMobilesTab() {
-                return `<div>${coursData.mobiles.map(m => `
+                return `<div>
+                    <div class="exercise-card trois-mots">
+                        <h4 style="font-size: 1.2rem; margin-bottom: 0.6rem;">🧭 Les 3 mots de ton projet</h4>
+                        <div class="trois-mots-grid">
+                            <div><strong>1. Mon mobile</strong><span>Pourquoi je m'entraîne. <em>Ex : me sentir bien dans mon corps.</em></span></div>
+                            <div><strong>2. Mon thème</strong><span>Ce que je développe : 🌿 Forme, 💪 Volume ou ⚡ Puissance.</span></div>
+                            <div><strong>3. Ma méthode</strong><span>Comment j'organise mes séries : constante, pyramide, stato-dynamique.</span></div>
+                        </div>
+                    </div>
+                    ${coursData.mobiles.map(m => `
                     <div class="exercise-card" style="border-left: 4px solid ${m.color};">
-                        <h4 style="color: ${m.color}; font-size: 1.3rem; margin-bottom: 1rem;">${m.nom}</h4>
+                        <h4 style="color: ${m.color}; font-size: 1.3rem; margin-bottom: 1rem;">${m.theme ? `<span class="theme-badge">Thème ${m.theme}</span> ` : ''}${m.nom}</h4>
                         
                         ${m.definition ? `
                             <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.75rem; margin-bottom: 1rem;">
