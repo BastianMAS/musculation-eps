@@ -1001,7 +1001,7 @@
 
         .bottom-nav {
             position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
-            display: grid; grid-template-columns: repeat(5, 1fr);
+            display: grid; grid-template-columns: repeat(6, 1fr);
             background: rgba(15, 23, 42, 0.97); backdrop-filter: blur(12px);
             border-top: 1px solid rgba(148, 163, 184, 0.15);
             padding-bottom: env(safe-area-inset-bottom);
@@ -1131,7 +1131,7 @@
             .stats-row { grid-template-columns: repeat(3, 1fr); }
             .seance-grid { grid-template-columns: 1fr; }
             .ressenti-grid { grid-template-columns: repeat(2, 1fr); }
-            .rpe-grid { grid-template-columns: repeat(5, 1fr); }
+            .rpe-grid { grid-template-columns: repeat(6, 1fr); }
         }
 
         /* ---- V4.1 : lisibilité, zones tactiles, nouveaux éléments ---- */
@@ -1188,6 +1188,13 @@
         .theme-badge { display: inline-block; background: #fde68a; color: #78350f; border-radius: 999px; padding: 0.1rem 0.6rem; font-size: 0.8rem; font-weight: 800; vertical-align: middle; }
         .trois-mots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.6rem; }
         .trois-mots-grid div { background: rgba(196,181,253,0.12); border-radius: 0.8rem; padding: 0.7rem; display: flex; flex-direction: column; gap: 0.25rem; }
+        .aflp-ligne { display: flex; gap: 0.6rem; align-items: flex-start; padding: 0.6rem 0.7rem; border-radius: 0.8rem; margin-bottom: 0.4rem; border: 1.5px solid rgba(148,163,184,0.25); cursor: pointer; }
+        .aflp-ligne input { width: 1.3rem; height: 1.3rem; margin-top: 0.15rem; flex-shrink: 0; }
+        .aflp-ligne.on { border-color: #c4b5fd; background: rgba(196,181,253,0.12); }
+        .prep-seance { display: flex; align-items: center; width: 100%; text-align: left; gap: 0.6rem; padding: 0.75rem 0.9rem; border-radius: 0.9rem; border: 1.5px solid rgba(148,163,184,0.25); background: transparent; color: inherit; margin-bottom: 0.45rem; font-size: 1rem; cursor: pointer; }
+        .prep-seance.on { border-color: #c4b5fd; background: rgba(196,181,253,0.14); }
+        .prep-exo { padding: 0.7rem 0; border-bottom: 1px solid rgba(148,163,184,0.15); }
+        .verrou-doux { opacity: 0.55; pointer-events: none; }
         /* ===============================================
            THÈME CLAIR "MARINE & OR" (couleurs du logo)
            =============================================== */
@@ -1298,6 +1305,10 @@
         body:not(.mode-sombre) .ress-chip { border-color: #a78bfa; color: #312e81; background: #fff; }
         body:not(.mode-sombre) .ress-chip.on { background: #7c3aed; color: #fff; border-color: #7c3aed; }
         body:not(.mode-sombre) .trois-mots-grid div { background: #f5f3ff; color: #1e1b4b; }
+        body:not(.mode-sombre) .aflp-ligne { border-color: #cbd5e1; color: #1e293b; }
+        body:not(.mode-sombre) .aflp-ligne.on { border-color: #7c3aed; background: #f5f3ff; }
+        body:not(.mode-sombre) .prep-seance { border-color: #cbd5e1; color: #1e293b; background: #fff; }
+        body:not(.mode-sombre) .prep-seance.on { border-color: #7c3aed; background: #f5f3ff; }
 
 </style>
 </head>
@@ -1309,7 +1320,7 @@
         // Pas de code d'accès : chaque élève garde le même iPad pendant le cycle.
         // ===============================================
 
-        const APP_VERSION = '4.5';   // à garder identique au numéro de sw.js
+        const APP_VERSION = '4.6';   // à garder identique au numéro de sw.js
         const PROFILS_KEY = 'livret-profils';
         const DERNIER_KEY = 'livret-dernier-profil';
 
@@ -2391,6 +2402,7 @@
                     ['seances', '📝', 'Séances'],
                     ['historique', '📅', 'Historique'],
                     ['progres', this.evalVerrou() ? '🔒' : '📈', 'Progrès'],
+                    ['evaluation', '🎓', 'Évaluation'],
                     ['cours', this.evalVerrou() ? '🔒' : '📚', 'Cours'],
                     ['profil', '👤', 'Profil']
                 ];
@@ -2401,11 +2413,12 @@
             }
 
             renderMain() {
-                const titres = { seances: '📝 Mes séances', historique: '📅 Historique', progres: '📈 Mes progrès', cours: '📚 Cours', profil: '👤 Profil' };
+                const titres = { seances: '📝 Mes séances', historique: '📅 Historique', progres: '📈 Mes progrès', evaluation: '🎓 Évaluation', cours: '📚 Cours', profil: '👤 Profil' };
                 let contenu = '';
                 if (this.tab === 'historique') contenu = this.renderHistorique();
                 else if ((this.tab === 'progres' || this.tab === 'cours') && this.evalVerrou()) contenu = this.renderVerrou();
                 else if (this.tab === 'progres') contenu = this.renderProgres();
+                else if (this.tab === 'evaluation') contenu = this.renderEvaluation();
                 else if (this.tab === 'cours') contenu = this.renderCoursTab();
                 else if (this.tab === 'profil') contenu = this.renderProfil();
                 else contenu = this.renderSeances();
@@ -2690,7 +2703,7 @@
                     this.draft = brouillon;
                     setTimeout(() => toast('Brouillon repris'), 50);
                 } else {
-                    this.draft = { index: null, id: uid(), nom: '', type: 'Hypertrophie', exercicesDetails: [], evaluation: false, projet: { mobile: '', pourquoi: '' } };
+                    this.draft = { index: null, id: uid(), nom: '', type: 'Hypertrophie', exercicesDetails: [] };
                 }
                 this.pickerMuscle = null;
                 this.view = 'builder';
@@ -2700,7 +2713,7 @@
             modifierSeance(index) {
                 if (this.evalVerrou()) { toast('🔒 Évaluation en cours : termine-la d\'abord'); return; }
                 const s = this.sessions[index];
-                this.draft = { index, id: s.id, nom: s.nom, type: s.type, exercicesDetails: JSON.parse(JSON.stringify(s.exercicesDetails || [])), dateCreation: s.dateCreation, evaluation: !!s.evaluation, projet: { mobile: '', pourquoi: '', ...(s.projet || {}) } };
+                this.draft = { index, id: s.id, nom: s.nom, type: s.type, exercicesDetails: JSON.parse(JSON.stringify(s.exercicesDetails || [])), dateCreation: s.dateCreation };
                 this.pickerMuscle = null;
                 this.view = 'builder';
                 this.go();
@@ -2796,9 +2809,7 @@
                 const d = this.draft;
                 if (d.exercicesDetails.length === 0) { toast('Ajoute au moins un exercice'); return; }
                 const nom = (d.nom || '').trim() || `Séance du ${new Date().toLocaleDateString('fr-FR')}`;
-                if (d.evaluation && (!(d.projet?.mobile || '').trim() || !(d.projet?.pourquoi || '').trim())) { toast('📝 Complète ton projet : ton mobile et pourquoi ce thème'); return; }
                 const session = { id: d.id || uid(), nom, type: d.type, exercicesDetails: d.exercicesDetails.map(e => ({ ...e, completed: false })), dateCreation: d.dateCreation || new Date().toISOString() };
-                if (d.evaluation) Object.assign(session, { evaluation: true, projet: { mobile: d.projet.mobile.trim(), pourquoi: d.projet.pourquoi.trim() } });
                 let index;
                 if (d.index !== null && d.index !== undefined && this.sessions[d.index]) {
                     this.sessions[d.index] = session;
@@ -2838,19 +2849,6 @@
                                     ? `${{ 'Endurance Musculaire': '🌿 Forme : tonifier, résister à la fatigue (endurance musculaire).', 'Hypertrophie': '💪 Volume : renforcer et développer le muscle (hypertrophie).', 'Force Explosive': '⚡ Puissance : être plus explosive, plus rapide (force explosive).', 'Personnalisé': '⚙️ Personnalisé : programme validé par ton professeur.' }[d.type] || ''}<br>🔒 Constante : ${def.series} séries × ${def.reps} reps • récup ${def.recup} s • charge conseillée : ${this.libelleNiveau(def.chargeNiveau)}${d.type === 'Force Explosive' ? ' • montée la plus explosive possible' : ''}`
                                     : `Par défaut : ${def.forme} • ${def.series} × ${def.reps} • ${def.intensite || ''} du 1RM • récup ${def.recup} s`}
                             </div>
-                        </div>
-
-                        <div class="box eval-box ${d.evaluation ? 'on' : ''}">
-                            <label class="eval-toggle"><input type="checkbox" ${d.evaluation ? 'checked' : ''} onchange="app.setEvaluation(this.checked)"> 📝 C'est ma séance d'évaluation</label>
-                            ${d.evaluation ? `
-                                <div class="eval-q">1. Mon mobile : pourquoi je m'entraîne ?</div>
-                                <div class="obj-chips">
-                                    ${MOBILES_PERSO.map((m, k) => `<button class="obj-chip ${d.projet.mobile === m ? 'active' : ''}" onclick="app.setMobilePerso(${k})">${m}</button>`).join('')}
-                                </div>
-                                <input class="input mt-2" placeholder="… ou écris ton propre mobile" value="${MOBILES_PERSO.includes(d.projet.mobile) ? '' : esc(d.projet.mobile)}" oninput="app.setProjet('mobile', this.value)">
-                                <div class="eval-q">2. Pourquoi ce thème (${this.getMobileLabel(d.type)}) pour mon mobile ?</div>
-                                <textarea class="input" rows="2" placeholder="Ex : je choisis la forme parce que je veux tenir plus longtemps debout au travail sans fatigue." oninput="app.setProjet('pourquoi', this.value)">${esc(d.projet.pourquoi)}</textarea>
-                                <div class="eval-q">3. Pour chaque exercice : ma charge prévue et ma charge de repli (si je suis fatiguée).</div>` : ''}
                         </div>
 
                         ${!debutant && (d.type === 'Force Maximale' || d.exercicesDetails.some(e => ['Rest-pause', 'Dégressif'].includes(e.forme))) ? `<div class="warn-banner">⚠️ <strong>Hors cadre EPS lycée.</strong> ${d.type === 'Force Maximale' ? 'La force maximale (85-100 % du max)' : 'Le rest-pause et le dégressif'} sont réservés aux pratiquants confirmés, avec une technique parfaite et un pareur. Demande l'accord de ton professeur.</div>` : ''}
@@ -2915,8 +2913,7 @@
                                     </select>
                                 </div>` : ''}
                             </div>` : ''; })()}
-                            <div class="locked">🔒 ${nomMethode(ex.forme)} : ${ex.series} séries × ${esc(ex.reps)} ${unite} • récup ${ex.recup} s${d.type === 'Force Explosive' && !temps ? ' • montée explosive' : ''}${pdc ? ' • 💪 Poids du corps' : (this.niveauxPour(d.type).length === 1 ? ' • ' + this.libelleNiveau(ex.chargeNiveau) : '')}${ex.forme && ex.forme !== 'Séries droites' ? `<div class="aide-methode">👉 ${aideMethode(ex.forme, d.type)}</div>` : ''}</div>
-                            ${this.renderEvalExo(ex, i, d, pdc || temps)}` : `
+                            <div class="locked">🔒 ${nomMethode(ex.forme)} : ${ex.series} séries × ${esc(ex.reps)} ${unite} • récup ${ex.recup} s${d.type === 'Force Explosive' && !temps ? ' • montée explosive' : ''}${pdc ? ' • 💪 Poids du corps' : (this.niveauxPour(d.type).length === 1 ? ' • ' + this.libelleNiveau(ex.chargeNiveau) : '')}${ex.forme && ex.forme !== 'Séries droites' ? `<div class="aide-methode">👉 ${aideMethode(ex.forme, d.type)}</div>` : ''}</div>` : `
                             <div class="fields">
                                 <div class="field" style="grid-column: span 2;">
                                     <label>Forme</label>
@@ -2934,26 +2931,139 @@
                                 <div class="field"><label>Tempo</label><input class="input" value="${esc(ex.tempo || '')}" placeholder="3-1-1" onchange="app.majExo(${i}, 'tempo', this.value)"></div>
                             </div>
                             ${rm ? `<div class="muted mt-2" style="font-size: 0.82rem;">🎯 1RM estimé : ${rm} kg</div>` : ''}
-                            ${this.aideGroupe(ex, i, d)}
-                            ${this.renderEvalExo(ex, i, d, pdc || temps)}`}
+                            ${this.aideGroupe(ex, i, d)}`}
                     </div>`;
             }
 
-            setEvaluation(v) { this.draft.evaluation = v; this.draft.projet = this.draft.projet || { mobile: '', pourquoi: '' }; this.saveDraft(); this.render(); }
-            setMobilePerso(k) { this.draft.projet.mobile = MOBILES_PERSO[k]; this.saveDraft(); this.render(); }
-            setProjet(champ, v) {
-                this.draft.projet[champ] = v;
-                if (champ === 'mobile') document.querySelectorAll('.eval-box .obj-chip').forEach(b => b.classList.remove('active'));
-                this.saveDraft();
+            // ================= ONGLET ÉVALUATION (Terminale CAP) =================
+
+            getPrep() {
+                const p = storage.getJSON('evalPrep', null);
+                return p && p.niveau ? p : { niveau: 'CAP', sessionId: null, mobile: '', pourquoi: '', charges: [] };
+            }
+            savePrep(p) { storage.save('evalPrep', p); }
+
+            setPrep(champ, v, rerender = false) {
+                const p = this.getPrep();
+                p[champ] = v;
+                if (champ === 'sessionId') p.charges = [];
+                this.savePrep(p);
+                if (champ === 'mobile' && !rerender) document.querySelectorAll('.prep-mobiles .obj-chip').forEach(b => b.classList.remove('active'));
+                if (rerender) this.render();
+            }
+            setMobileEval(k) { this.setPrep('mobile', MOBILES_PERSO[k], true); }
+            setChargePrep(i, champ, v) {
+                const p = this.getPrep();
+                p.charges[i] = { ...(p.charges[i] || {}), [champ]: v };
+                this.savePrep(p);
             }
 
-            renderEvalExo(ex, i, d, sansCharge) {
-                if (!d.evaluation) return '';
-                const debutant = this.userMode === 'debutant';
-                return `<div class="fields eval-fields">
-                    ${sansCharge ? '' : (debutant ? `<div class="field"><label>Charge prévue (kg)</label><input class="input" type="number" step="0.5" inputmode="decimal" value="${ex.chargeTheo ?? ''}" placeholder="kg" onchange="app.majExo(${i}, 'chargeTheo', this.value)"></div>` : '')}
-                    <div class="field" style="grid-column: span ${sansCharge ? 4 : 2};"><label>${sansCharge ? 'Si c\'est trop dur, je fais :' : 'Charge de repli (kg)'}</label><input class="input" ${sansCharge ? '' : 'type="number" step="0.5" inputmode="decimal"'} value="${esc(ex.repli || '')}" placeholder="${sansCharge ? 'ex : pompes sur les genoux' : 'kg'}" onchange="app.majExo(${i}, 'repli', this.value)"></div>
-                </div>`;
+            getChoixAFLP() { return storage.getJSON('evalAFLP', { choix: [], repart: null, date: null }); }
+            basculerAFLP(n) {
+                const c = this.getChoixAFLP();
+                if (c.choix.includes(n)) c.choix = c.choix.filter(x => x !== n);
+                else if (c.choix.length < 2) c.choix.push(n);
+                else { toast('Tu choisis 2 AFLP seulement'); return; }
+                c.choix.sort(); c.repart = c.choix.length === 2 ? c.repart : null; c.date = null;
+                storage.save('evalAFLP', c); this.render();
+            }
+            choisirRepartition(r) {
+                const c = this.getChoixAFLP();
+                c.repart = r; c.date = new Date().toISOString();
+                storage.save('evalAFLP', c); this.render();
+                toast('✅ Choix enregistré');
+            }
+
+            renderEvaluation() {
+                const enCours = this.live && this.live.evaluation;
+                const AFLP = {
+                    3: 'Varier mes méthodes et tenir mon carnet',
+                    4: 'Être une bonne partenaire : parer, observer, conseiller',
+                    5: "M'engager à fond pour progresser",
+                    6: "Connaître les règles d'hygiène de vie (alimentation, sommeil, dopage)"
+                };
+                const c = this.getChoixAFLP();
+                const p = this.getPrep();
+                const actives = this.sessions.map((s, i) => ({ s, i })).filter(x => !x.s.archived);
+                const sel = actives.find(x => x.s.id === p.sessionId);
+                const exos = sel ? (sel.s.exercicesDetails || []) : [];
+                const evals = [...this.sessionHistory].filter(h => h.evaluation).sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+                return `
+                    <div class="obj-chips mb-3">
+                        <button class="obj-chip active">🎓 Terminale CAP</button>
+                        <button class="obj-chip" disabled style="opacity: 0.45;">Terminale Bac pro · bientôt</button>
+                        <button class="obj-chip" disabled style="opacity: 0.45;">Terminale générale · bientôt</button>
+                    </div>
+                    ${enCours ? `<div class="box eval-box on text-center"><div class="text-white" style="font-weight: 700;">📝 Ton évaluation est en cours</div><button class="btn btn-primary btn-lg mt-2" onclick="app.reprendreSeance()">▶️ Revenir à mon évaluation</button></div>` : ''}
+
+                    <div class="box">
+                        <div class="box-title">📌 Mes 2 AFLP au fil de la séquence <span class="muted" style="font-weight: 500;">(8 points)</span></div>
+                        <div class="muted mb-2">Choisis 2 AFLP en début de séquence (avant la leçon 3), puis comment tu répartis les 8 points.</div>
+                        ${[3, 4, 5, 6].map(n => `<label class="aflp-ligne ${c.choix.includes(n) ? 'on' : ''}"><input type="checkbox" ${c.choix.includes(n) ? 'checked' : ''} onchange="app.basculerAFLP(${n})"> <strong>AFLP ${n}</strong> : ${AFLP[n]}</label>`).join('')}
+                        ${c.choix.length === 2 ? `
+                            <div class="eval-q">Ma répartition des 8 points :</div>
+                            <div class="obj-chips">
+                                ${['2-6', '4-4', '6-2'].map(r => { const [a, b] = r.split('-'); return `<button class="obj-chip ${c.repart === r ? 'active' : ''}" onclick="app.choisirRepartition('${r}')">AFLP ${c.choix[0]} : ${a} pts • AFLP ${c.choix[1]} : ${b} pts</button>`; }).join('')}
+                            </div>
+                            ${c.date ? `<div class="muted mt-2">✅ Choix enregistré le ${new Date(c.date).toLocaleDateString('fr-FR')}</div>` : ''}` : ''}
+                    </div>
+
+                    <div class="box ${enCours ? 'verrou-doux' : ''}">
+                        <div class="box-title">🏁 Épreuve de fin de séquence <span class="muted" style="font-weight: 500;">(AFLP 1 et 2 · 12 points)</span></div>
+                        <div class="eval-q">1. Ma séance</div>
+                        ${actives.length === 0 ? `<div class="muted">Construis d'abord ta séance dans l'onglet <strong>Séances</strong> (thème, exercices, méthodes).</div>` : `
+                            <div class="muted mb-2">Ta séance se construit dans l'onglet Séances. Ici, choisis celle que tu vas réaliser.</div>
+                            ${actives.map(({ s }) => `<button class="prep-seance ${p.sessionId === s.id ? 'on' : ''}" onclick="app.setPrep('sessionId', '${s.id}', true)"><span class="grow"><strong>${esc(s.nom)}</strong><br><span class="muted">${this.getMobileLabel(s.type)} • ${(s.exercicesDetails || []).length} exercices</span></span><span>${p.sessionId === s.id ? '✅' : '○'}</span></button>`).join('')}`}
+                        ${sel ? `
+                            <div class="eval-q">2. Mon projet</div>
+                            <div class="mb-2">Mon thème : <strong>${this.getMobileLabel(sel.s.type)}</strong></div>
+                            <div class="muted mb-1">Mon mobile : pourquoi je m'entraîne ?</div>
+                            <div class="obj-chips prep-mobiles">
+                                ${MOBILES_PERSO.map((m, k) => `<button class="obj-chip ${p.mobile === m ? 'active' : ''}" onclick="app.setMobileEval(${k})">${m}</button>`).join('')}
+                            </div>
+                            <input class="input mt-2" placeholder="… ou écris ton propre mobile" value="${MOBILES_PERSO.includes(p.mobile) ? '' : esc(p.mobile)}" oninput="app.setPrep('mobile', this.value)">
+                            <div class="muted mt-3 mb-1">Pourquoi ce thème pour mon mobile ?</div>
+                            <textarea class="input" rows="2" placeholder="Explique en une ou deux phrases." oninput="app.setPrep('pourquoi', this.value)">${esc(p.pourquoi)}</textarea>
+
+                            <div class="eval-q">3. Mes charges</div>
+                            ${exos.map((ex, i) => { const sans = estPDC(ex.nom) || estTemps(ex.nom); const ch = p.charges[i] || {}; return `
+                                <div class="prep-exo">
+                                    <div class="text-white" style="font-weight: 700;">${i + 1}. ${esc(ex.nom)}</div>
+                                    <div class="muted">${nomMethode(ex.forme)} • ${ex.series} × ${esc(ex.reps)}${estTemps(ex.nom) ? ' s' : ''} • récup ${ex.recup} s</div>
+                                    <div class="fields mt-2">
+                                        ${sans ? '' : `<div class="field"><label>Charge prévue (kg)</label><input class="input" type="number" step="0.5" inputmode="decimal" value="${esc(ch.prevue ?? (ex.chargeTheo || ''))}" placeholder="kg" oninput="app.setChargePrep(${i}, 'prevue', this.value)"></div>`}
+                                        <div class="field" style="grid-column: span ${sans ? 4 : 2};"><label>${sans ? "Si c'est trop dur, je fais :" : 'Charge de repli si je suis fatiguée (kg)'}</label><input class="input" ${sans ? '' : 'type="number" step="0.5" inputmode="decimal"'} value="${esc(ch.repli || '')}" placeholder="${sans ? 'ex : sur les genoux' : 'kg'}" oninput="app.setChargePrep(${i}, 'repli', this.value)"></div>
+                                    </div>
+                                </div>`; }).join('')}
+                            <button class="btn btn-success btn-block btn-lg mt-3" onclick="app.demarrerEvaluation()" ${enCours ? 'disabled' : ''}>▶️ Démarrer mon évaluation</button>
+                            <div class="muted text-center mt-2">🔒 Pendant l'évaluation, le cours, les vidéos et les aides sont fermés.</div>` : ''}
+                    </div>
+
+                    ${evals.length ? `
+                        <div class="box">
+                            <div class="box-title">📂 Mes évaluations</div>
+                            ${evals.map(h => `
+                                <div class="row-between wrap" style="padding: 0.5rem 0; border-bottom: 1px solid rgba(148,163,184,0.15); gap: 0.5rem;">
+                                    <div><strong class="text-white">${esc(h.sessionName)}</strong><div class="muted">${new Date(h.completedAt).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+                                    <div class="row"><button class="btn btn-success" onclick="app.exportEvalPDF('${h.id}', true)">📤 Envoyer</button><button class="btn btn-secondary" onclick="app.exportEvalPDF('${h.id}')">📄 PDF</button></div>
+                                </div>`).join('')}
+                        </div>` : ''}`;
+            }
+
+            demarrerEvaluation() {
+                const p = this.getPrep();
+                const index = this.sessions.findIndex(s => s.id === p.sessionId);
+                const s = this.sessions[index];
+                if (!s) { toast('Choisis ta séance'); return; }
+                if (!(p.mobile || '').trim()) { toast('Choisis ou écris ton mobile'); return; }
+                if (!(p.pourquoi || '').trim()) { toast('Explique pourquoi ce thème'); return; }
+                // charge prévue : reprise du champ affiché si l'élève ne l'a pas modifié
+                (s.exercicesDetails || []).forEach((ex, i) => { p.charges[i] = p.charges[i] || {}; if ((p.charges[i].prevue === undefined || p.charges[i].prevue === '') && ex.chargeTheo) p.charges[i].prevue = String(ex.chargeTheo); });
+                const manque = (s.exercicesDetails || []).find((ex, i) => !estPDC(ex.nom) && !estTemps(ex.nom) && !(parseFloat(p.charges[i]?.prevue) > 0));
+                if (manque) { toast(`Note ta charge prévue pour ${manque.nom}`); return; }
+                if (!confirm('Démarrer ton évaluation ? Le cours, les vidéos et les aides seront fermés jusqu\'à la fin.')) return;
+                this.savePrep(p);
+                this.demarrerSeance(index, { ...p, mobile: p.mobile.trim(), pourquoi: p.pourquoi.trim() });
             }
 
             aideGroupe(ex, i, d) {
@@ -2985,20 +3095,22 @@
                 return null;
             }
 
-            demarrerSeance(index) {
-                const s = this.sessions[index];
-                if (!s) return;
+            demarrerSeance(index, prep = null) {
+                const s0 = this.sessions[index];
+                if (!s0) return;
                 if (this.live && !confirm(`Une séance est déjà en cours (${this.live.nom}). La remplacer ?`)) return;
+                // En évaluation, la charge prévue et la charge de repli viennent de la préparation
+                const s = prep ? { ...s0, evaluation: true, exercicesDetails: (s0.exercicesDetails || []).map((ex, i) => ({ ...ex, chargeTheo: parseFloat(prep.charges[i]?.prevue) || null, repli: prep.charges[i]?.repli || '' })) } : s0;
                 this.live = {
                     sessionId: s.id, nom: s.nom, type: s.type, startedAt: Date.now(),
-                    evaluation: !!s.evaluation, projet: s.projet || null,
+                    evaluation: !!prep, niveauEval: prep ? prep.niveau : null, projet: prep ? { mobile: prep.mobile, pourquoi: prep.pourquoi } : null,
                     echauffement: { cardio: false, mobilite: false, series: false },
                     exercices: (s.exercicesDetails || []).map(ex => {
                         const n = parseInt(ex.series) || 3;
                         const cibles = this.repsCibles(ex.reps, n);
                         const prev = this.dernierePerf(ex.nom);
                         const kgDefaut = estPDC(ex.nom) ? '' : (ex.chargeReelle || ex.chargeTheo || '');
-                        const prevu = s.evaluation && !estPDC(ex.nom) && ex.chargeTheo;
+                        const prevu = prep && !estPDC(ex.nom) && ex.chargeTheo;
                         return {
                             nom: ex.nom, muscle: ex.muscle, forme: ex.forme, repsCible: ex.reps, recup: parseInt(ex.recup) || 90,
                             tempo: ex.tempo, chargeNiveau: ex.chargeNiveau, repli: ex.repli || '', chargePrevue: prevu || null,
@@ -3618,11 +3730,12 @@
                     echauffement: L.echauffement.cardio && L.echauffement.mobilite && L.echauffement.series,
                     rpe: this.bilan.rpe, ressenti: this.bilan.ressenti,
                     retourCalme: (this.bilan.etirFaits || []).length,
-                    ...(L.evaluation ? { evaluation: true, projet: L.projet } : {}),
+                    ...(L.evaluation ? { evaluation: true, niveauEval: L.niveauEval || 'CAP', projet: L.projet, choixAFLP: this.getChoixAFLP() } : {}),
                     notes: (document.getElementById('session-notes')?.value || '').trim()
                 };
                 this.sessionHistory.push(entry);
                 this.saveSessionHistory();
+                if (L.evaluation) storage.remove('evalPrep');
                 this.live = null;
                 this.saveLive();
                 this.openHistory = entry.id;
@@ -3756,13 +3869,19 @@
                 const ress = (id) => (RESSENTIS_MUSC.find(r => r.id === id) || {}).label || '-';
                 const ANA = { legere: 'trop légère', adaptee: 'adaptée', lourde: 'trop lourde', monter: 'monter la charge', baisser: 'baisser la charge', reps: 'changer les répétitions', recup: 'changer la récupération', rien: 'ne rien changer' };
                 doc.setFontSize(18); doc.setTextColor(19, 40, 77);
-                doc.text('Évaluation CA5 - Musculation (CAP)', 105, y, { align: 'center' });
+                doc.text('Évaluation CA5 - Musculation - Terminale CAP', 105, y, { align: 'center' });
                 y += 8; doc.setFontSize(13); doc.setTextColor(15, 23, 42);
                 doc.text(propre(this.currentUser), 105, y, { align: 'center' });
                 y += 6; doc.setFontSize(10); doc.setTextColor(100, 116, 139);
                 doc.text(`${date}  -  ${propre(h.sessionName)}  -  durée ${h.dureeMin ?? '-'} min`, 105, y, { align: 'center' });
                 y += 4;
 
+                const ca = h.choixAFLP;
+                if (ca && ca.choix && ca.choix.length === 2) {
+                    titre('AFLP choisis au fil de la séquence (8 points)');
+                    const [a, b] = (ca.repart || '-').split('-');
+                    ligne(`AFLP ${ca.choix[0]} : ${a || '?'} pts    AFLP ${ca.choix[1]} : ${b || '?'} pts${ca.date ? '    (choix fait le ' + new Date(ca.date).toLocaleDateString('fr-FR') + ')' : ''}`);
+                }
                 titre('Temps 1 - Mon projet');
                 ligne(`Mon mobile : ${h.projet?.mobile || '-'}`);
                 ligne(`Thème d'entraînement : ${this.getMobileLabel(h.type)}`);
