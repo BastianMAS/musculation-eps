@@ -1195,6 +1195,18 @@
         .prep-seance.on { border-color: #c4b5fd; background: rgba(196,181,253,0.14); }
         .prep-exo { padding: 0.7rem 0; border-bottom: 1px solid rgba(148,163,184,0.15); }
         .verrou-doux { opacity: 0.55; pointer-events: none; }
+        .chrono-gros { margin: 0.7rem 0 0.4rem; min-height: 58px; font-size: 1.15rem; font-weight: 800; background: #fde68a; color: #422006; border: none; border-radius: 1rem; }
+        .chrono-gros.on { background: #fca5a5; color: #450a0a; }
+        /* v4.8 : binôme et chrono réglable */
+        .binome-bar { display: flex; gap: 0.5rem; padding: 0.5rem 0.75rem; height: 64px; box-sizing: border-box; background: #ede9fe; position: sticky; top: 0; z-index: 55; }
+        .binome-bar + .topbar { top: 64px; }
+        .binome-btn { flex: 1; min-height: 48px; border-radius: 0.9rem; border: 2px solid #c4b5fd; background: #fff; color: #4c1d95; font-weight: 700; font-size: 1.05rem; cursor: pointer; }
+        .binome-btn.on { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+        .binome-etat { font-size: 0.85rem; font-weight: 600; opacity: 0.85; margin-left: 0.3rem; }
+        .binome-x { width: 48px; border-radius: 0.9rem; border: 2px solid #c4b5fd; background: transparent; color: #6d28d9; font-size: 1.1rem; cursor: pointer; }
+        .chrono-zone { display: flex; gap: 0.5rem; align-items: stretch; margin: 0.7rem 0 0.4rem; }
+        .chrono-zone .chrono-gros { margin: 0; }
+        .chrono-pm { min-width: 72px; border-radius: 1rem; border: 2px solid #fcd34d; background: #fffbeb; color: #78350f; font-weight: 800; font-size: 1.05rem; cursor: pointer; }
         /* ===============================================
            THÈME CLAIR "MARINE & OR" (couleurs du logo)
            =============================================== */
@@ -1320,7 +1332,7 @@
         // Pas de code d'accès : chaque élève garde le même iPad pendant le cycle.
         // ===============================================
 
-        const APP_VERSION = '4.6';   // à garder identique au numéro de sw.js
+        const APP_VERSION = '4.9';   // à garder identique au numéro de sw.js
         const PROFILS_KEY = 'livret-profils';
         const DERNIER_KEY = 'livret-dernier-profil';
 
@@ -2220,9 +2232,16 @@
             // ================= PROFILS =================
 
             selectUser(nom) {
+                // repos en cours gardé pour chaque élève (binôme sur la même tablette)
+                this.reposParProfil = this.reposParProfil || {};
+                if (this.currentUser) { if (this.rest && this.rest.active) this.reposParProfil[this.currentUser] = this.rest; else delete this.reposParProfil[this.currentUser]; }
+                this.rest = this.reposParProfil[nom] && this.reposParProfil[nom].active && this.reposParProfil[nom].end > Date.now() ? this.reposParProfil[nom] : { end: 0, total: 0, active: false };
+                this.chrono = null;
                 this.currentUser = nom;
                 profilActif = nom;
                 localStorage.setItem(DERNIER_KEY, nom);
+                const b = this.getBinome().filter(x => x !== nom);
+                localStorage.setItem('livret-binome', JSON.stringify([nom, ...b].slice(0, 2)));
                 this.sessions = storage.getJSON('sessions', []);
                 this.sessionHistory = storage.getJSON('sessionHistory', []);
                 this.rmHistory = storage.getJSON('rmHistory', []);
@@ -2236,9 +2255,16 @@
                 this.migrerProfil();
                 this.live = storage.getJSON('seanceLive', null);
                 this.draft = null;
-                this.view = this.live && (Date.now() - this.live.startedAt) < 3 * 3600 * 1000 ? 'live' : 'main';
+                this.view = this.live && (Date.now() - this.live.startedAt) < 12 * 3600 * 1000 ? 'live' : 'main';
+                if (this.view === 'live') setTimeout(() => toast('💾 Ta séance a été retrouvée : continue où tu en étais'), 600);
                 this.tab = 'seances';
                 this.startTicker();
+                // Sauvegarde de sécurité si la page est fermée ou passe en arrière-plan
+                if (!window.__sauvegardeAuto) {
+                    window.__sauvegardeAuto = true;
+                    window.addEventListener('pagehide', () => app && app.live && app.saveLive());
+                    document.addEventListener('visibilitychange', () => { if (document.hidden && app && app.live) app.saveLive(); });
+                }
                 this.go();
             }
 
@@ -2277,7 +2303,75 @@
                 if (!existant) toast(`Bienvenue ${nom} ! 💪`);
             }
 
+            getBinome() {
+                try {
+                    const profils = getProfils();
+                    return (JSON.parse(localStorage.getItem('livret-binome') || '[]') || []).filter(n => profils.includes(n));
+                } catch (e) { return []; }
+            }
+
+            // Copie de secours complète du profil (dans l'iPad), faite à chaque changement de profil
+            sauvegardeSecours() {
+                if (!this.currentUser) return false;
+                try {
+                    if (this.live) this.saveLive();
+                    const copie = { date: Date.now(), sessions: this.sessions, sessionHistory: this.sessionHistory, rmHistory: this.rmHistory, live: this.live || null };
+                    localStorage.setItem(`livret-secours-${this.currentUser}`, JSON.stringify(copie));
+                    return true;
+                } catch (e) { return false; }
+            }
+
+            getSecours() {
+                try { return JSON.parse(localStorage.getItem(`livret-secours-${this.currentUser}`) || 'null'); } catch (e) { return null; }
+            }
+
+            restaurerSecours() {
+                const c = this.getSecours();
+                if (!c) return;
+                if (!confirm(`Remettre ton livret comme il était le ${new Date(c.date).toLocaleDateString('fr-FR')} à ${new Date(c.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} ?`)) return;
+                this.sessions = c.sessions || []; this.saveSessions();
+                this.sessionHistory = c.sessionHistory || []; this.saveSessionHistory();
+                this.rmHistory = c.rmHistory || []; storage.save('rmHistory', this.rmHistory);
+                this.live = c.live || null; this.saveLive();
+                toast('♻️ Livret récupéré');
+                this.render();
+            }
+
+            basculerBinome(nom) {
+                if (nom === this.currentUser) return;
+                const avant = this.currentUser;
+                const ok = this.sauvegardeSecours();
+                this.selectUser(nom);
+                toast(ok ? `💾 ${avant} sauvegardée • 👤 au tour de ${nom}` : `👤 C'est au tour de ${nom}`);
+            }
+
+            quitterBinome() {
+                localStorage.setItem('livret-binome', JSON.stringify([this.currentUser]));
+                this.render();
+            }
+
+            // Barre de binôme : 2 élèves sur la même tablette, on passe de l'une à l'autre en 1 geste
+            renderBinome() {
+                const b = this.getBinome();
+                if (b.length < 2) return '';
+                const etat = (nom) => {
+                    try {
+                        const l = JSON.parse(localStorage.getItem(`user-${nom}-seanceLive`) || 'null');
+                        if (!l) return '';
+                        const c = this.compterSeries(l);
+                        return `<span class="binome-etat">● ${c.faites}/${c.total}</span>`;
+                    } catch (e) { return ''; }
+                };
+                const ordre = [...b].sort((x, y) => x.localeCompare(y));
+                return `
+                    <div class="binome-bar">
+                        ${ordre.map(n => `<button class="binome-btn ${n === this.currentUser ? 'on' : ''}" onclick="app.basculerBinome('${esc(n).replace(/'/g, "\\'")}')">👤 ${esc(n)} ${etat(n)}</button>`).join('')}
+                        <button class="binome-x" title="Travailler seule" onclick="app.quitterBinome()">✕</button>
+                    </div>`;
+            }
+
             changerProfil() {
+                if (this.sauvegardeSecours()) toast(`💾 ${this.currentUser} sauvegardée`);
                 this.stopRest();
                 this.currentUser = null;
                 localStorage.removeItem(DERNIER_KEY);
@@ -2290,8 +2384,10 @@
                 const prefix = `user-${this.currentUser}-`;
                 const keys = [];
                 for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith(prefix)) keys.push(k); }
+                keys.push(`livret-secours-${this.currentUser}`);
                 keys.forEach(k => localStorage.removeItem(k));
                 setProfils(getProfils().filter(p => p !== this.currentUser));
+                this.currentUser = null; this.live = null;
                 this.changerProfil();
             }
 
@@ -2423,6 +2519,7 @@
                 else if (this.tab === 'profil') contenu = this.renderProfil();
                 else contenu = this.renderSeances();
                 return `
+                    ${this.renderBinome()}
                     ${this.renderTopbar(titres[this.tab], '', `<span class="chip-user" onclick="app.switchTab('profil')">👤 ${esc(this.currentUser)}</span>`)}
                     <main class="container page">${contenu}</main>
                     ${this.renderBottomNav()}`;
@@ -3277,7 +3374,8 @@
                 const e0 = L.echauffement;
                 const echaufOk = e0.cardio && e0.mobilite && e0.series;
                 return `
-                    ${this.renderTopbar(`${L.evaluation ? '📝' : '🏋️'} ${esc(L.nom)}`, `${L.evaluation ? '<strong>Évaluation</strong> • ' : ''}⏱️ <span id="elapsed">${this.formatDuree(Date.now() - L.startedAt)}</span> • ${faites}/${total} séries`,
+                    ${this.renderBinome()}
+                    ${this.renderTopbar(`${L.evaluation ? '📝' : '🏋️'} ${esc(L.nom)}`, `${L.evaluation ? '<strong>Évaluation</strong> • ' : ''}⏱️ <span id="elapsed">${this.formatDuree(Date.now() - L.startedAt)}</span> • ${faites}/${total} séries • 💾 sauvegarde auto`,
                         `<div class="row"><button class="btn btn-ghost" onclick="app.quitterLive()">←</button><button class="btn btn-success" onclick="app.terminerSeance()">Terminer</button></div>`)}
                     <main class="container page page-live">
                         ${L.evaluation ? `
@@ -3345,6 +3443,17 @@
                 const cible = `${ex.series.length} × ${esc(ex.repsCible)}${temps ? ' s' : ''} • ${recupTxt}${niveau ? ' • ' + niveau : ''}${ex.tempo && !debutant && !temps ? ' • tempo ' + esc(ex.tempo) : ''}${this.live.type === 'Force Explosive' && !temps ? ' • ⚡ montée explosive' : ''}`;
                 const perf = (x) => temps ? `${x.reps} s` : `${kgTxt(x.kg, ex.nom)} × ${x.reps}`;
                 const evalMode = !!this.live.evaluation;
+                const kChrono = temps ? ex.series.findIndex(x => !x.done) : -1;
+                const chronoIci = this.chrono && this.chrono.e === e;
+                const grosChrono = kChrono < 0 && !chronoIci ? '' : (() => {
+                    const k = chronoIci ? this.chrono.k : kChrono;
+                    const txt = chronoIci ? `⏹ Arrêter • ${Math.max(0, Math.ceil((this.chrono.end - Date.now()) / 1000))} s` : `⏱️ Lancer le chrono • série ${k + 1} (${parseInt(ex.series[k].cible) || 30} s)`;
+                    return `<div class="chrono-zone">
+                        ${chronoIci ? '' : `<button class="chrono-pm" onclick="app.reglerChrono(${e}, -5)">−5 s</button>`}
+                        <button class="btn chrono-gros grow ${chronoIci ? 'on' : ''}" id="chrono-gros-${e}" onclick="app.lancerChrono(${e}, ${k})">${txt}</button>
+                        ${chronoIci ? '' : `<button class="chrono-pm" onclick="app.reglerChrono(${e}, 5)">+5 s</button>`}
+                    </div>`;
+                })();
                 const conseil = fini && !evalMode ? this.conseilCharge(ex) : null;
                 const aide = ex.forme && ex.forme !== 'Séries droites' && !lettre && !evalMode ? aideMethode(ex.forme, this.live.type) : '';
                 return `
@@ -3364,6 +3473,7 @@
                             </details>` : ''}
                         ${prev ? `<div class="muted mt-2" style="font-size: 0.9rem;">🕐 Dernière fois (${new Date(prev.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}) : ${prev.series.filter(s => s.done).map(perf).join(' • ')}</div>` : ''}
                         ${prev && prev.conseil && !commence && !evalMode ? `<div class="conseil">💡 Conseil de la dernière fois : ${prev.conseil}</div>` : ''}
+                        ${grosChrono}
                         <table class="sets">
                             <thead><tr><th>Série</th><th>Précédent</th><th>${temps ? 'Chrono' : (pdc ? 'Charge' : 'kg')}</th><th>${temps ? 'Secondes' : 'Reps'}</th><th>✓</th></tr></thead>
                             <tbody>
@@ -3372,13 +3482,13 @@
                                     const enCours = this.chrono && this.chrono.e === e && this.chrono.k === k;
                                     const celluleCharge = temps
                                         ? `<button class="chrono-btn ${enCours ? 'on' : ''}" id="chrono-${e}-${k}" onclick="app.lancerChrono(${e}, ${k})" ${s.done ? 'disabled' : ''}>${enCours ? '⏹ ' + Math.max(0, Math.ceil((this.chrono.end - Date.now()) / 1000)) + ' s' : '▶ ' + (parseInt(s.cible) || 30) + ' s'}</button>`
-                                        : (pdc ? `<span class="pdc-cell">PDC</span>` : `<input class="set-input" id="kg-${e}-${k}" type="number" inputmode="decimal" step="0.5" value="${esc(s.kg)}" placeholder="kg" onchange="app.majSerie(${e}, ${k}, 'kg', this.value)">`);
+                                        : (pdc ? `<span class="pdc-cell">PDC</span>` : `<input class="set-input" id="kg-${e}-${k}" type="number" inputmode="decimal" step="0.5" value="${esc(s.kg)}" placeholder="kg" oninput="app.majSerie(${e}, ${k}, 'kg', this.value)" onfocus="setTimeout(() => this.select(), 0)">`);
                                     return `
                                     <tr class="${s.done ? 'set-done' : ''}">
                                         <td class="set-num">${k + 1}</td>
                                         <td class="set-prev">${p}</td>
                                         <td>${celluleCharge}</td>
-                                        <td><input class="set-input" id="reps-${e}-${k}" type="number" inputmode="numeric" value="${esc(s.reps)}" placeholder="${esc(s.cible)}" onchange="app.majSerie(${e}, ${k}, 'reps', this.value)"></td>
+                                        <td><input class="set-input" id="reps-${e}-${k}" type="number" inputmode="numeric" value="${esc(s.reps)}" placeholder="${esc(s.cible)}" oninput="app.majSerie(${e}, ${k}, 'reps', this.value)" onfocus="setTimeout(() => this.select(), 0)"></td>
                                         <td><button class="set-check ${s.done ? 'on' : ''}" onclick="app.cocherSerie(${e}, ${k})">✓</button></td>
                                     </tr>${evalMode && s.done ? `
                                     <tr class="ress-row"><td colspan="5"><div class="ress-chips" id="ress-${e}-${k}">${RESSENTIS_MUSC.map(r => `<button class="ress-chip ${s.ressenti === r.id ? 'on' : ''}" data-id="${r.id}" onclick="app.setRessentiSerie(${e}, ${k}, '${r.id}')">${r.emo} ${r.label}</button>`).join('')}</div></td></tr>` : ''}`;
@@ -3451,6 +3561,20 @@
                 this.stopRest();
                 this.chrono = { e, k, total, start: Date.now(), end: Date.now() + total * 1000 };
                 this.startTicker();
+                this.render();
+            }
+
+            // −5 s / +5 s : change la durée de toutes les séries restantes de l'exercice
+            reglerChrono(e, d) {
+                const ex = this.live.exercices[e];
+                ex.series.forEach(x => {
+                    if (x.done) return;
+                    const avant = parseInt(x.cible) || 30;
+                    const apres = Math.max(5, Math.min(300, avant + d));
+                    if (String(x.reps) === String(avant) || x.reps === '') x.reps = String(apres);
+                    x.cible = String(apres);
+                });
+                this.saveLive();
                 this.render();
             }
 
@@ -3533,7 +3657,10 @@
                 if (this.chrono) {
                     const r = Math.ceil((this.chrono.end - Date.now()) / 1000);
                     if (r <= 0) this.finChrono();
-                    else { const b = document.getElementById(`chrono-${this.chrono.e}-${this.chrono.k}`); if (b) b.textContent = `⏹ ${r} s`; }
+                    else {
+                        const b = document.getElementById(`chrono-${this.chrono.e}-${this.chrono.k}`); if (b) b.textContent = `⏹ ${r} s`;
+                        const g = document.getElementById(`chrono-gros-${this.chrono.e}`); if (g) g.textContent = `⏹ Arrêter • ${r} s`;
+                    }
                 }
                 if (this.guide) {
                     const r = Math.ceil((this.guide.end - Date.now()) / 1000);
@@ -3625,6 +3752,7 @@
                 const { faites, total } = this.compterSeries(L);
                 const debutant = this.userMode === 'debutant';
                 return `
+                    ${this.renderBinome()}
                     ${this.renderTopbar('📝 Bilan de séance', esc(L.nom), `<button class="btn btn-ghost" onclick="app.reprendreSeance()">← Séance</button>`)}
                     <main class="container page">
                         <div class="stats-row">
@@ -4225,6 +4353,7 @@
                             <button class="btn btn-primary" onclick="app.exportData()">💾 Exporter mes données</button>
                             <button class="btn btn-secondary" onclick="app.importData()">📥 Importer</button>
                         </div>
+                        ${(() => { const c = this.getSecours(); return c ? `<div class="muted mt-3">💾 Sauvegarde automatique (à chaque changement de profil) : ${new Date(c.date).toLocaleDateString('fr-FR')} à ${new Date(c.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div><button class="btn btn-ghost mt-2" onclick="app.restaurerSecours()">♻️ Récupérer cette sauvegarde</button>` : ''; })()}
                     </div>
 
                     ${!installe ? `<div class="install-tip mb-4">📲 <strong>Installe l'appli</strong> : Partager ⬆️ puis « Sur l'écran d'accueil ». Ouvre-la toujours depuis l'icône pour ne pas perdre tes séances.</div>` : ''}
