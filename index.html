@@ -1207,6 +1207,17 @@
         .chrono-zone { display: flex; gap: 0.5rem; align-items: stretch; margin: 0.7rem 0 0.4rem; }
         .chrono-zone .chrono-gros { margin: 0; }
         .chrono-pm { min-width: 72px; border-radius: 1rem; border: 2px solid #fcd34d; background: #fffbeb; color: #78350f; font-weight: 800; font-size: 1.05rem; cursor: pointer; }
+        /* v5.0 : RM en mode standard */
+        .rm-ligne { margin-top: 0.6rem; padding: 0.65rem 0.8rem; border-radius: 0.9rem; background: rgba(253,230,138,0.12); font-size: 0.95rem; }
+        .rm-charge { margin-top: 0.25rem; }
+        .rm-in { width: 90px; text-align: center; }
+        .lien { background: none; border: none; color: #a5b4fc; text-decoration: underline; padding: 0.2rem 0; font-size: 0.88rem; cursor: pointer; }
+        .rm-row { padding: 0.6rem 0; border-bottom: 1px solid rgba(148,163,184,0.15); }
+        .rm-val { font-weight: 800; font-size: 1.15rem; color: #fde68a; }
+        .rm-barre { height: 10px; border-radius: 6px; background: rgba(148,163,184,0.2); margin: 0.35rem 0; overflow: hidden; }
+        .rm-barre span { display: block; height: 100%; background: #a5b4fc; border-radius: 6px; }
+        .rm-detail { font-size: 0.85rem; }
+        .set-num { white-space: nowrap; }
         /* ===============================================
            THÈME CLAIR "MARINE & OR" (couleurs du logo)
            =============================================== */
@@ -1321,6 +1332,11 @@
         body:not(.mode-sombre) .aflp-ligne.on { border-color: #7c3aed; background: #f5f3ff; }
         body:not(.mode-sombre) .prep-seance { border-color: #cbd5e1; color: #1e293b; background: #fff; }
         body:not(.mode-sombre) .prep-seance.on { border-color: #7c3aed; background: #f5f3ff; }
+        body:not(.mode-sombre) .rm-ligne { background: #fef9c3; color: #422006; }
+        body:not(.mode-sombre) .rm-val { color: #92400e; }
+        body:not(.mode-sombre) .lien { color: #4338ca; }
+        body:not(.mode-sombre) .rm-barre { background: #e2e8f0; }
+        body:not(.mode-sombre) .rm-barre span { background: #818cf8; }
 
 </style>
 </head>
@@ -1332,7 +1348,7 @@
         // Pas de code d'accès : chaque élève garde le même iPad pendant le cycle.
         // ===============================================
 
-        const APP_VERSION = '4.9';   // à garder identique au numéro de sw.js
+        const APP_VERSION = '5.1';   // à garder identique au numéro de sw.js
         const PROFILS_KEY = 'livret-profils';
         const DERNIER_KEY = 'livret-dernier-profil';
 
@@ -1544,6 +1560,16 @@
             { id: 'brulure', emo: '🔥', label: 'Brûlure', aide: 'ça pique en fin de série' },
             { id: 'vide', emo: '🪫', label: 'Vide', aide: 'plus une seule rép possible' }
         ];
+        // Pourcentages du RM selon le thème et la méthode (repris du Cours), un par série pour la pyramide
+        function pctsRM(mobile, forme) {
+            if (mobile === 'Endurance Musculaire') return forme === 'Pyramidal ascendant' ? [45, 50, 55] : [50];
+            if (mobile === 'Force Explosive') return [45];
+            if (forme === 'Pyramidal ascendant') return [65, 70, 75, 80];
+            if (forme === 'Stato-dynamique') return [60];
+            return [70];
+        }
+        const arrondirKg = (v, nom) => { const pas = /Haltère|Goblet/i.test(nom || '') ? 1 : 2.5; return Math.max(pas, Math.round(v / pas) * pas); };
+        const kgFr = (v) => String(v).replace('.', ',');
         const kgTxt = (kg, nom = null) => (kg === null || kg === undefined || kg === '' || parseFloat(kg) === 0) ? (nom && !estPDC(nom) ? '? kg' : 'PDC') : `${String(kg).replace('.', ',')} kg`;
         const rpeColor = (rpe) => rpe <= 3 ? '#86efac' : rpe <= 6 ? '#fde68a' : rpe <= 8 ? '#fdba74' : '#fca5a5';
 
@@ -2430,7 +2456,7 @@
                 storage.save('userMode', this.userMode);
                 if (this.userMode === 'debutant' && this.progresTab !== 'exercices') this.progresTab = 'exercices';
                 this.render();
-                toast(this.userMode === 'avance' ? 'Mode avancé activé' : 'Mode débutant activé');
+                toast(this.userMode === 'avance' ? 'Mode avancé activé' : 'Mode standard activé');
             }
 
             applyTheme(theme) {
@@ -2701,8 +2727,8 @@
 
             objectifsDisponibles() {
                 return this.userMode === 'debutant'
-                    ? ['Endurance Musculaire', 'Hypertrophie', 'Force Explosive', 'Personnalisé']
-                    : ['Force Maximale', 'Force Explosive', 'Hypertrophie', 'Endurance de Force', 'Endurance Musculaire', 'Personnalisé'];
+                    ? ['Endurance Musculaire', 'Hypertrophie', 'Force Explosive', 'Personnalisé', 'Test RM']
+                    : ['Force Maximale', 'Force Explosive', 'Hypertrophie', 'Endurance de Force', 'Endurance Musculaire', 'Personnalisé', 'Test RM'];
             }
 
             formesPour(mobile) {
@@ -2742,6 +2768,7 @@
             }
 
             defautsExercice(mobile, forme, nom) {
+                if (mobile === 'Test RM') return { forme: 'Test RM', series: 3, reps: '10-5-max', recup: 120, tempo: null, chargeNiveau: 'Léger', intensite: null };
                 if (this.userMode === 'debutant' && nom && forme && !this.methodesExo(mobile, nom).includes(forme)) forme = 'Séries droites';
                 const d = this.defautsBase(mobile, forme);
                 if (nom && estPDC(nom)) { d.chargeNiveau = 'PDC'; d.chargeTheo = null; }
@@ -2774,6 +2801,87 @@
                 if (!nums) return null;
                 if (/^\d+-\d+%$/.test(String(intensite).trim())) return (parseInt(nums[0]) + parseInt(nums[1])) / 2;
                 return parseInt(nums[0]);
+            }
+
+            // Dernier test de RM enregistré pour un exercice
+            dernierRM(nom) {
+                const t = this.rmHistory.filter(x => norm(x.exercise) === norm(nom)).sort((a, b) => new Date(b.date) - new Date(a.date));
+                return t[0] || null;
+            }
+
+            // Charges de travail calculées à partir du RM (une par série)
+            chargesRM(ex, mobile) {
+                if (estPDC(ex.nom) || estTemps(ex.nom)) return null;
+                const t = this.dernierRM(ex.nom);
+                if (!t) return null;
+                const pcts = pctsRM(mobile, ex.forme);
+                const n = parseInt(ex.series) || pcts.length;
+                return { rm: t.rm, test: t, pcts, kg: Array.from({ length: n }, (_, k) => arrondirKg(t.rm * (pcts[Math.min(k, pcts.length - 1)]) / 100, ex.nom)) };
+            }
+
+            renderRMExo(ex, i, d) {
+                if (estPDC(ex.nom) || estTemps(ex.nom)) return '';
+                const c = this.chargesRM(ex, d.type);
+                if (c) {
+                    const uniq = c.pcts.length > 1 ? c.kg : [c.kg[0]];
+                    const pct = c.pcts;
+                    return `<div class="rm-ligne">🎯 Mon RM : <strong>${kgFr(c.rm)} kg</strong> <span class="muted">(test ${kgFr(c.test.weight)} kg × ${c.test.reps}, le ${new Date(c.test.date).toLocaleDateString('fr-FR')})</span>
+                        <div class="rm-charge">➡️ Charge de travail : <strong>${uniq.map(kgFr).join(' → ')} kg</strong> (${pct.join(' → ')} % du RM)</div>
+                        </div>`;
+                }
+                return `<div class="rm-ligne muted">🎯 Pas encore de RM pour cet exercice : il se calcule pendant une séance <strong>🎯 Test RM</strong>.</div>`;
+            }
+
+            enregistrerRMExo(i) {
+                const ex = this.draft.exercicesDetails[i];
+                const kg = parseFloat(String(document.getElementById(`rmkg-${i}`).value).replace(',', '.'));
+                const reps = parseInt(document.getElementById(`rmreps-${i}`).value);
+                if (!(kg > 0) || !(reps > 0)) { toast('Indique la charge et le nombre de répétitions'); return; }
+                if (reps < 3 || reps > 12) { toast('Fais ton test entre 3 et 12 répétitions'); return; }
+                const rm = Math.round(estimer1RM(kg, reps) * 10) / 10;
+                this.rmHistory.push({ muscle: ex.muscle || '', exercise: ex.nom, rm, weight: kg, reps, date: new Date().toISOString() });
+                this.saveRMHistory();
+                this.rmEdit = null;
+                toast(`🎯 RM ${ex.nom} : ${kgFr(rm)} kg`);
+                this.render();
+            }
+
+            supprimerRM(date) {
+                if (!confirm('Supprimer ce test de RM ?')) return;
+                this.rmHistory = this.rmHistory.filter(t => t.date !== date);
+                this.saveRMHistory(); this.render();
+            }
+
+            // Page « Mes RM » : dernier RM de chaque exercice, rangé par groupe musculaire
+            renderMesRM() {
+                if (!this.rmHistory.length) return `<div class="text-center" style="padding: 3rem 1rem; opacity: 0.7;"><div style="font-size: 3.5rem;">🎯</div><div class="text-white">Aucun RM pour l'instant</div><div class="muted">Calcule ton RM dans ta séance (onglet Séances, sous chaque exercice).</div></div>`;
+                const groupes = {};
+                this.rmHistory.forEach(t => {
+                    const m = t.muscle || this.muscleDe(t.exercise) || 'Autres';
+                    const g = groupes[m] = groupes[m] || {};
+                    (g[t.exercise] = g[t.exercise] || []).push(t);
+                });
+                const ordre = [...this.musclesList, ...Object.keys(groupes).filter(m => !this.musclesList.includes(m))].filter(m => groupes[m]);
+                const max = Math.max(...this.rmHistory.map(t => t.rm));
+                return ordre.map(m => `
+                    <div class="box">
+                        <div class="box-title">${esc(m)}</div>
+                        ${Object.entries(groupes[m]).map(([nom, tests]) => {
+                            tests.sort((a, b) => new Date(b.date) - new Date(a.date));
+                            const t = tests[0], avant = tests[1];
+                            const diff = avant ? Math.round((t.rm - avant.rm) * 10) / 10 : null;
+                            return `<div class="rm-row">
+                                <div class="row-between"><span class="text-white" style="font-weight: 700;">${esc(nom)}</span><span class="rm-val">${kgFr(t.rm)} kg${diff ? `<span class="progres-chip ${diff > 0 ? 'up' : 'down'}">${diff > 0 ? '+' : ''}${kgFr(diff)} kg</span>` : ''}</span></div>
+                                <div class="rm-barre"><span style="width: ${Math.max(6, t.rm / max * 100)}%"></span></div>
+                                <div class="muted rm-detail">Test : ${kgFr(t.weight)} kg × ${t.reps} le ${new Date(t.date).toLocaleDateString('fr-FR')}${avant ? ` • avant : ${kgFr(avant.rm)} kg (${new Date(avant.date).toLocaleDateString('fr-FR')})` : ''} <button class="lien" onclick="app.supprimerRM('${t.date}')">supprimer</button></div>
+                            </div>`;
+                        }).join('')}
+                    </div>`).join('');
+            }
+
+            muscleDe(nom) {
+                for (const m of this.musclesList) if ((this.getExercicesByMuscle ? this.getExercicesByMuscle(m) : []).some(e => norm(e.nom || e) === norm(nom))) return m;
+                return '';
             }
 
             meilleur1RM(nom) {
@@ -2834,6 +2942,10 @@
             setNomDraft(v) { this.draft.nom = v; this.saveDraft(); }
 
             setObjectif(mobile) {
+                if (mobile === 'Test RM' && this.draft.exercicesDetails.some(ex => estPDC(ex.nom) || estTemps(ex.nom))) {
+                    this.draft.exercicesDetails = this.draft.exercicesDetails.filter(ex => !estPDC(ex.nom) && !estTemps(ex.nom));
+                    toast('Exercices au poids du corps retirés : pas de test RM dessus');
+                }
                 this.draft.type = mobile;
                 // On réapplique les paramètres du nouvel objectif à tous les exercices
                 this.draft.exercicesDetails = this.draft.exercicesDetails.map(ex => {
@@ -2863,6 +2975,7 @@
             }
 
             ajouterExoNom(nom) {
+                if (this.draft.type === 'Test RM' && (estPDC(nom) || estTemps(nom))) { toast('Pas de test RM sur un exercice au poids du corps ou au temps'); return; }
                 const d = this.defautsExercice(this.draft.type, null, nom);
                 const ex = { muscle: this.pickerMuscle || '', nom, ...d, chargeTheo: null, chargeReelle: null, completed: false };
                 if (this.userMode === 'avance' && !estPDC(nom)) ex.chargeTheo = this.chargeConseillee(nom, d.intensite);
@@ -2942,9 +3055,10 @@
                                 ${objectifs.map(o => `<button class="obj-chip ${d.type === o ? 'active' : ''}" onclick="app.setObjectif('${o}')">${this.getMobileLabel(o)}</button>`).join('')}
                             </div>
                             <div class="muted mt-2">
-                                ${debutant
+                                ${d.type === 'Test RM' ? '' : debutant
                                     ? `${{ 'Endurance Musculaire': '🌿 Forme : tonifier, résister à la fatigue (endurance musculaire).', 'Hypertrophie': '💪 Volume : renforcer et développer le muscle (hypertrophie).', 'Force Explosive': '⚡ Puissance : être plus explosive, plus rapide (force explosive).', 'Personnalisé': '⚙️ Personnalisé : programme validé par ton professeur.' }[d.type] || ''}<br>🔒 Constante : ${def.series} séries × ${def.reps} reps • récup ${def.recup} s • charge conseillée : ${this.libelleNiveau(def.chargeNiveau)}${d.type === 'Force Explosive' ? ' • montée la plus explosive possible' : ''}`
                                     : `Par défaut : ${def.forme} • ${def.series} × ${def.reps} • ${def.intensite || ''} du 1RM • récup ${def.recup} s`}
+                                ${d.type === 'Test RM' ? `<div class="mt-2">🎯 <strong>Séance test RM</strong> : pour chaque exercice, 2 séries d'échauffement puis 1 série test (le plus de répétitions propres possible, entre 3 et 12). L'appli calcule et enregistre ton RM.</div>` : ''}
                             </div>
                         </div>
 
@@ -2979,6 +3093,18 @@
             }
 
             renderExoEdit(ex, i, d) {
+                if (d.type === 'Test RM') {
+                    const t = this.dernierRM(ex.nom);
+                    return `
+                        <div class="ex-edit">
+                            <div class="row-between">
+                                <div class="text-white" style="font-weight: 700;">${i + 1}. ${esc(ex.nom)}</div>
+                                <button class="btn-icon" onclick="app.retirerExo(${i})">✕</button>
+                            </div>
+                            <div class="locked">🔒 Échauffement 10 reps léger → 5 reps plus lourd → <strong>TEST</strong> : le plus de reps propres possible (3 à 12) • récup 2 min</div>
+                            ${t ? `<div class="muted mt-2">RM actuel : ${kgFr(t.rm)} kg (le ${new Date(t.date).toLocaleDateString('fr-FR')}) : l'appli te proposera les charges.</div>` : ''}
+                        </div>`;
+                }
                 const debutant = this.userMode === 'debutant';
                 const formes = this.formesPour(d.type);
                 const pdc = estPDC(ex.nom), temps = estTemps(ex.nom);
@@ -2996,7 +3122,7 @@
                             <button class="btn-icon" onclick="app.retirerExo(${i})">🗑️</button>
                         </div>
                         ${debutant ? `
-                            ${(() => { const m = this.methodesExo(d.type, ex.nom); const niv = !pdc && this.niveauxPour(d.type).length > 1; return m.length > 1 || niv ? `<div class="fields">
+                            ${(() => { const m = this.methodesExo(d.type, ex.nom); const niv = !pdc && !temps && this.niveauxPour(d.type).length > 1 && !this.dernierRM(ex.nom); return m.length > 1 || niv ? `<div class="fields">
                                 ${m.length > 1 ? `<div class="field" style="grid-column: span 2;">
                                     <label>Méthode</label>
                                     <select class="input" onchange="app.majExo(${i}, 'forme', this.value)">
@@ -3010,7 +3136,8 @@
                                     </select>
                                 </div>` : ''}
                             </div>` : ''; })()}
-                            <div class="locked">🔒 ${nomMethode(ex.forme)} : ${ex.series} séries × ${esc(ex.reps)} ${unite} • récup ${ex.recup} s${d.type === 'Force Explosive' && !temps ? ' • montée explosive' : ''}${pdc ? ' • 💪 Poids du corps' : (this.niveauxPour(d.type).length === 1 ? ' • ' + this.libelleNiveau(ex.chargeNiveau) : '')}${ex.forme && ex.forme !== 'Séries droites' ? `<div class="aide-methode">👉 ${aideMethode(ex.forme, d.type)}</div>` : ''}</div>` : `
+                            <div class="locked">🔒 ${nomMethode(ex.forme)} : ${ex.series} séries × ${esc(ex.reps)} ${unite} • récup ${ex.recup} s${d.type === 'Force Explosive' && !temps ? ' • montée explosive' : ''}${pdc ? ' • 💪 Poids du corps' : (this.niveauxPour(d.type).length === 1 && !this.dernierRM(ex.nom) && !temps ? ' • ' + this.libelleNiveau(ex.chargeNiveau) : '')}${ex.forme && ex.forme !== 'Séries droites' ? `<div class="aide-methode">👉 ${aideMethode(ex.forme, d.type)}</div>` : ''}</div>
+                            ${this.renderRMExo(ex, i, d)}` : `
                             <div class="fields">
                                 <div class="field" style="grid-column: span 2;">
                                     <label>Forme</label>
@@ -3081,7 +3208,7 @@
                 };
                 const c = this.getChoixAFLP();
                 const p = this.getPrep();
-                const actives = this.sessions.map((s, i) => ({ s, i })).filter(x => !x.s.archived);
+                const actives = this.sessions.map((s, i) => ({ s, i })).filter(x => !x.s.archived && x.s.type !== 'Test RM');
                 const sel = actives.find(x => x.s.id === p.sessionId);
                 const exos = sel ? (sel.s.exercicesDetails || []) : [];
                 const evals = [...this.sessionHistory].filter(h => h.evaluation).sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
@@ -3128,7 +3255,7 @@
                                     <div class="text-white" style="font-weight: 700;">${i + 1}. ${esc(ex.nom)}</div>
                                     <div class="muted">${nomMethode(ex.forme)} • ${ex.series} × ${esc(ex.reps)}${estTemps(ex.nom) ? ' s' : ''} • récup ${ex.recup} s</div>
                                     <div class="fields mt-2">
-                                        ${sans ? '' : `<div class="field"><label>Charge prévue (kg)</label><input class="input" type="number" step="0.5" inputmode="decimal" value="${esc(ch.prevue ?? (ex.chargeTheo || ''))}" placeholder="kg" oninput="app.setChargePrep(${i}, 'prevue', this.value)"></div>`}
+                                        ${sans ? '' : `<div class="field"><label>Charge prévue (kg)</label><input class="input" type="number" step="0.5" inputmode="decimal" value="${esc(ch.prevue ?? (ex.chargeTheo || (this.chargesRM(ex, sel.s.type)?.kg[0] ?? '')))}" placeholder="kg" oninput="app.setChargePrep(${i}, 'prevue', this.value)"></div>`}
                                         <div class="field" style="grid-column: span ${sans ? 4 : 2};"><label>${sans ? "Si c'est trop dur, je fais :" : 'Charge de repli si je suis fatiguée (kg)'}</label><input class="input" ${sans ? '' : 'type="number" step="0.5" inputmode="decimal"'} value="${esc(ch.repli || '')}" placeholder="${sans ? 'ex : sur les genoux' : 'kg'}" oninput="app.setChargePrep(${i}, 'repli', this.value)"></div>
                                     </div>
                                 </div>`; }).join('')}
@@ -3155,7 +3282,7 @@
                 if (!(p.mobile || '').trim()) { toast('Choisis ou écris ton mobile'); return; }
                 if (!(p.pourquoi || '').trim()) { toast('Explique pourquoi ce thème'); return; }
                 // charge prévue : reprise du champ affiché si l'élève ne l'a pas modifié
-                (s.exercicesDetails || []).forEach((ex, i) => { p.charges[i] = p.charges[i] || {}; if ((p.charges[i].prevue === undefined || p.charges[i].prevue === '') && ex.chargeTheo) p.charges[i].prevue = String(ex.chargeTheo); });
+                (s.exercicesDetails || []).forEach((ex, i) => { p.charges[i] = p.charges[i] || {}; const auto = ex.chargeTheo || this.chargesRM(ex, s.type)?.kg[0]; if ((p.charges[i].prevue === undefined || p.charges[i].prevue === '') && auto) p.charges[i].prevue = String(auto); });
                 const manque = (s.exercicesDetails || []).find((ex, i) => !estPDC(ex.nom) && !estTemps(ex.nom) && !(parseFloat(p.charges[i]?.prevue) > 0));
                 if (manque) { toast(`Note ta charge prévue pour ${manque.nom}`); return; }
                 if (!confirm('Démarrer ton évaluation ? Le cours, les vidéos et les aides seront fermés jusqu\'à la fin.')) return;
@@ -3186,6 +3313,7 @@
                 const hist = [...this.sessionHistory].sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
                 for (const h of hist) {
                     if (avant && new Date(h.completedAt) >= new Date(avant)) continue;
+                    if (h.type === 'Test RM') continue;   // les séances test ne servent pas de référence de charge
                     const ex = (h.exercices || []).find(e => e.nom === nom);
                     if (ex && ex.series.some(s => s.done)) return { date: h.completedAt, series: ex.series, conseil: ex.conseil };
                 }
@@ -3204,15 +3332,23 @@
                     echauffement: { cardio: false, mobilite: false, series: false },
                     exercices: (s.exercicesDetails || []).map(ex => {
                         const n = parseInt(ex.series) || 3;
-                        const cibles = this.repsCibles(ex.reps, n);
+                        const testRM = s.type === 'Test RM';
+                        const cibles = testRM ? ['10', '5', 'max'] : this.repsCibles(ex.reps, n);
+                        const rmAvant = testRM ? this.dernierRM(ex.nom) : null;
                         const prev = this.dernierePerf(ex.nom);
                         const kgDefaut = estPDC(ex.nom) ? '' : (ex.chargeReelle || ex.chargeTheo || '');
                         const prevu = prep && !estPDC(ex.nom) && ex.chargeTheo;
+                        const crm = this.chargesRM(ex, s.type);
+                        const dateDerniere = (this.sessionHistory.filter(h => h.type !== 'Test RM' && (h.exercices || []).some(x => x.nom === ex.nom)).map(h => h.completedAt).sort().pop()) || null;
+                        const rmPlusRecent = crm && (!prev || !dateDerniere || new Date(crm.test.date) > new Date(dateDerniere));
                         return {
                             nom: ex.nom, muscle: ex.muscle, forme: ex.forme, repsCible: ex.reps, recup: parseInt(ex.recup) || 90,
                             tempo: ex.tempo, chargeNiveau: ex.chargeNiveau, repli: ex.repli || '', chargePrevue: prevu || null,
-                            series: Array.from({ length: n }, (_, k) => ({
-                                kg: prevu ? prevu : !estPDC(ex.nom) && prev && prev.series[k] && prev.series[k].kg !== '' && prev.series[k].kg !== null ? prev.series[k].kg : kgDefaut,
+                            series: testRM ? cibles.map((c, k) => ({
+                                kg: rmAvant ? arrondirKg(rmAvant.rm * [0.5, 0.7, 0.85][k], ex.nom) : '',
+                                reps: k < 2 ? c : '', cible: c, done: false
+                            })) : Array.from({ length: n }, (_, k) => ({
+                                kg: prevu ? prevu : rmPlusRecent ? crm.kg[k] : !estPDC(ex.nom) && prev && prev.series[k] && prev.series[k].kg !== '' && prev.series[k].kg !== null ? prev.series[k].kg : kgDefaut,
                                 reps: /^\d+$/.test(cibles[k]) ? cibles[k] : '',
                                 cible: cibles[k],
                                 done: false
@@ -3390,7 +3526,7 @@
                                 <label><input type="checkbox" ${e0.cardio ? 'checked' : ''} onchange="app.setEchauffement('cardio', this.checked)"> 🏃 Cardio léger (5-10 min) : vélo, tapis, rameur...</label>
                                 <label><input type="checkbox" ${e0.mobilite ? 'checked' : ''} onchange="app.setEchauffement('mobilite', this.checked)"> 🤸 Mobilité articulaire : rotations, étirements dynamiques</label>
                                 <label><input type="checkbox" ${e0.series ? 'checked' : ''} onchange="app.setEchauffement('series', this.checked)"> 💪 Séries d'échauffement sur ton 1er exercice chargé</label>
-                                ${L.evaluation ? '' : this.seriesEchauffement(L)}
+                                ${L.evaluation || L.type === 'Test RM' ? '' : this.seriesEchauffement(L)}
                                 ${!(e0.cardio && e0.mobilite) && !L.evaluation ? `<button class="btn btn-primary btn-block mt-2" onclick="app.lancerGuide()">▶ Échauffement guidé (5 min)</button>` : ''}`}
                         </div>
 
@@ -3440,7 +3576,8 @@
                 const pdc = estPDC(ex.nom), temps = estTemps(ex.nom);
                 const niveau = pdc ? '💪 Poids du corps' : (ex.chargeNiveau ? this.libelleNiveau(ex.chargeNiveau) : '');
                 const recupTxt = lettre ? (this.groupes(this.live.exercices).find(x => x.idx.includes(e)).idx.slice(-1)[0] === e ? (ex.forme === 'Circuit' ? 'puis repos' : `puis récup ${ex.recup} s`) : (ex.forme === 'Circuit' ? 'enchaîne' : 'sans repos')) : `récup ${ex.recup} s`;
-                const cible = `${ex.series.length} × ${esc(ex.repsCible)}${temps ? ' s' : ''} • ${recupTxt}${niveau ? ' • ' + niveau : ''}${ex.tempo && !debutant && !temps ? ' • tempo ' + esc(ex.tempo) : ''}${this.live.type === 'Force Explosive' && !temps ? ' • ⚡ montée explosive' : ''}`;
+                let cible = `${ex.series.length} × ${esc(ex.repsCible)}${temps ? ' s' : ''} • ${recupTxt}${niveau ? ' • ' + niveau : ''}${ex.tempo && !debutant && !temps ? ' • tempo ' + esc(ex.tempo) : ''}${this.live.type === 'Force Explosive' && !temps ? ' • ⚡ montée explosive' : ''}`;
+                if (ex.forme === 'Test RM') cible = 'échauffement puis test • récup 2 min';
                 const perf = (x) => temps ? `${x.reps} s` : `${kgTxt(x.kg, ex.nom)} × ${x.reps}`;
                 const evalMode = !!this.live.evaluation;
                 const kChrono = temps ? ex.series.findIndex(x => !x.done) : -1;
@@ -3474,6 +3611,7 @@
                         ${prev ? `<div class="muted mt-2" style="font-size: 0.9rem;">🕐 Dernière fois (${new Date(prev.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}) : ${prev.series.filter(s => s.done).map(perf).join(' • ')}</div>` : ''}
                         ${prev && prev.conseil && !commence && !evalMode ? `<div class="conseil">💡 Conseil de la dernière fois : ${prev.conseil}</div>` : ''}
                         ${grosChrono}
+                        ${ex.forme === 'Test RM' ? `<div class="aide-methode">👉 Éch. 1 et 2 : pour préparer le muscle. TEST : charge plus lourde, le plus de répétitions propres possible (entre 3 et 12).</div>` : ''}
                         <table class="sets">
                             <thead><tr><th>Série</th><th>Précédent</th><th>${temps ? 'Chrono' : (pdc ? 'Charge' : 'kg')}</th><th>${temps ? 'Secondes' : 'Reps'}</th><th>✓</th></tr></thead>
                             <tbody>
@@ -3485,7 +3623,7 @@
                                         : (pdc ? `<span class="pdc-cell">PDC</span>` : `<input class="set-input" id="kg-${e}-${k}" type="number" inputmode="decimal" step="0.5" value="${esc(s.kg)}" placeholder="kg" oninput="app.majSerie(${e}, ${k}, 'kg', this.value)" onfocus="setTimeout(() => this.select(), 0)">`);
                                     return `
                                     <tr class="${s.done ? 'set-done' : ''}">
-                                        <td class="set-num">${k + 1}</td>
+                                        <td class="set-num">${ex.forme === 'Test RM' ? (['Éch. 1', 'Éch. 2'][k] || '<strong>TEST</strong>') : k + 1}</td>
                                         <td class="set-prev">${p}</td>
                                         <td>${celluleCharge}</td>
                                         <td><input class="set-input" id="reps-${e}-${k}" type="number" inputmode="numeric" value="${esc(s.reps)}" placeholder="${esc(s.cible)}" oninput="app.majSerie(${e}, ${k}, 'reps', this.value)" onfocus="setTimeout(() => this.select(), 0)"></td>
@@ -3496,11 +3634,23 @@
                             </tbody>
                         </table>
                         ${conseil ? `<div class="conseil">💡 Prochaine fois : ${conseil}</div>` : ''}
-                        <div class="row mt-2">
+                        ${ex.forme === 'Test RM' ? (r => !r ? '' : r.rm ? `<div class="rm-ligne">🎯 RM estimé : <strong>${kgFr(r.rm)} kg</strong> (${kgFr(r.kg)} kg × ${r.reps})</div>` : `<div class="warn-banner mt-2">${r.erreur}</div>`)(this.resultatTest(ex)) : ''}
+                        ${ex.forme === 'Test RM' ? '' : `<div class="row mt-2">
                             <button class="btn-icon grow" onclick="app.ajouterSerie(${e})">+ Série</button>
                             <button class="btn-icon" onclick="app.retirerSerie(${e})" ${ex.series.length <= 1 ? 'disabled style="opacity:0.3"' : ''}>− Série</button>
-                        </div>
+                        </div>`}
                     </div>`;
+            }
+
+            // Résultat d'une série test RM : { rm } ou { erreur }
+            resultatTest(ex) {
+                const t = ex.series[ex.series.length - 1];
+                if (!t || !t.done) return null;
+                const kg = parseFloat(String(t.kg).replace(',', '.')), reps = parseInt(t.reps);
+                if (!(kg > 0) || !(reps > 0)) return { erreur: 'Indique la charge et les répétitions de ta série test.' };
+                if (reps > 12) return { erreur: 'Plus de 12 répétitions : charge trop légère. Refais un test plus lourd.' };
+                if (reps < 3) return { erreur: 'Moins de 3 répétitions : charge trop lourde. Refais un test plus léger.' };
+                return { rm: Math.round(estimer1RM(kg, reps) * 10) / 10, kg, reps };
             }
 
             setRessentiSerie(e, k, id) {
@@ -3768,6 +3918,12 @@
                                 </div>`).join('')}
                         </div>
                         ${L.evaluation ? this.renderAnalyse(L) : ''}
+                        ${L.type === 'Test RM' ? `
+                            <div class="box">
+                                <div class="box-title">🎯 Mes RM</div>
+                                ${L.exercices.map(ex => { const r = this.resultatTest(ex); const avant = this.dernierRM(ex.nom); return `<div class="row-between" style="padding: 0.45rem 0; border-bottom: 1px solid rgba(148,163,184,0.15);"><span class="text-white">${esc(ex.nom)}</span><span>${r && r.rm ? `<strong class="rm-val">${kgFr(r.rm)} kg</strong>${avant ? ` <span class="progres-chip ${r.rm > avant.rm ? 'up' : r.rm < avant.rm ? 'down' : 'eq'}">${r.rm > avant.rm ? '+' : ''}${kgFr(Math.round((r.rm - avant.rm) * 10) / 10)} kg</span>` : ''}` : `<span class="muted">${r ? 'non calculé' : 'test non fait'}</span>`}</span></div>`; }).join('')}
+                                <div class="muted mt-2">Ils seront enregistrés dans Progrès → 🎯 Mes RM et serviront à calculer tes charges.</div>
+                            </div>` : ''}
                         <div class="box">
                             <div class="box-title">💬 Comment as-tu trouvé la séance ?</div>
                             ${debutant ? `
@@ -3861,6 +4017,15 @@
                     ...(L.evaluation ? { evaluation: true, niveauEval: L.niveauEval || 'CAP', projet: L.projet, choixAFLP: this.getChoixAFLP() } : {}),
                     notes: (document.getElementById('session-notes')?.value || '').trim()
                 };
+                if (L.type === 'Test RM') {
+                    const quand = new Date().toISOString();
+                    entry.rmTests = [];
+                    L.exercices.forEach(ex => {
+                        const r = this.resultatTest(ex);
+                        if (r && r.rm) { const t = { muscle: ex.muscle || '', exercise: ex.nom, rm: r.rm, weight: r.kg, reps: r.reps, date: quand }; this.rmHistory.push(t); entry.rmTests.push(t); }
+                    });
+                    this.saveRMHistory();
+                }
                 this.sessionHistory.push(entry);
                 this.saveSessionHistory();
                 if (L.evaluation) storage.remove('evalPrep');
@@ -3924,6 +4089,7 @@
                                         </div>`).join('')}
                                     ${h.notes ? `<div class="mt-2 text-white" style="font-style: italic; opacity: 0.9;">💬 « ${esc(h.notes)} »</div>` : ''}
                                     <div class="row mt-4">
+                                        ${h.rmTests && h.rmTests.length ? `<div class="rm-ligne" style="width: 100%;">🎯 RM : ${h.rmTests.map(t => `${esc(t.exercise)} <strong>${kgFr(t.rm)} kg</strong>`).join(' • ')}</div>` : ''}
                                         ${h.evaluation ? `<button class="btn btn-success" onclick="app.exportEvalPDF('${h.id}', true)">📤 Envoyer mon évaluation</button><button class="btn btn-secondary" onclick="app.exportEvalPDF('${h.id}')">📄 PDF</button>`
                                             : h.exercices ? `<button class="btn btn-success" onclick="app.exportBilanPDF('${h.id}', true)">📤 Envoyer mon bilan</button><button class="btn btn-secondary" onclick="app.exportBilanPDF('${h.id}')">📄 PDF</button>` : ''}
                                         <button class="btn btn-ghost" onclick="app.supprimerHistorique('${h.id}')">🗑️ Supprimer</button>
@@ -4118,6 +4284,25 @@
                     y += 5.5;
                 });
 
+                if (this.rmHistory.length) {
+                    titre('Mes RM (dernier test)');
+                    const parExo = {};
+                    this.rmHistory.forEach(t => { const k = t.exercise; if (!parExo[k] || new Date(t.date) > new Date(parExo[k].date)) parExo[k] = t; });
+                    doc.setFontSize(9); doc.setTextColor(100, 116, 139);
+                    doc.text('Groupe', 20, y); doc.text('Exercice', 55, y); doc.text('RM', 135, y); doc.text('Test', 155, y); y += 5;
+                    doc.setTextColor(40, 50, 70);
+                    Object.values(parExo).map(t => ({ ...t, m: t.muscle || this.muscleDe(t.exercise) || 'Autres' }))
+                        .sort((a, b) => (this.musclesList.indexOf(a.m) + 99) % 99 - (this.musclesList.indexOf(b.m) + 99) % 99)
+                        .forEach(t => {
+                            saut(6);
+                            doc.text(propre(t.m), 20, y);
+                            doc.text(doc.splitTextToSize(propre(t.exercise), 76)[0], 55, y);
+                            doc.text(`${kgFr(t.rm)} kg`, 135, y);
+                            doc.text(`${kgFr(t.weight)} kg x ${t.reps} (${new Date(t.date).toLocaleDateString('fr-FR').slice(0, 5)})`, 155, y);
+                            y += 5.5;
+                        });
+                }
+
                 const notes = r.hist.filter(h => h.notes);
                 if (notes.length) {
                     titre('Mes remarques');
@@ -4155,12 +4340,18 @@
 
             renderProgres() {
                 const avance = this.userMode === 'avance';
-                const tabs = avance ? `
+                const tabs = !avance ? `
+                    <div class="sub-tabs">
+                        <button class="sub-tab-btn ${this.progresTab !== 'mesrm' ? 'active' : ''}" onclick="app.setProgresTab('exercices')">📈 Mes exercices</button>
+                        <button class="sub-tab-btn ${this.progresTab === 'mesrm' ? 'active' : ''}" onclick="app.setProgresTab('mesrm')">🎯 Mes RM</button>
+                    </div>` : `
                     <div class="sub-tabs">
                         <button class="sub-tab-btn ${this.progresTab === 'exercices' ? 'active' : ''}" onclick="app.setProgresTab('exercices')">📈 Mes exercices</button>
                         <button class="sub-tab-btn ${this.progresTab === 'rm' ? 'active' : ''}" onclick="app.setProgresTab('rm')">🎯 Test 1RM</button>
                         <button class="sub-tab-btn ${this.progresTab === 'charges' ? 'active' : ''}" onclick="app.setProgresTab('charges')">⚖️ Calcul des charges</button>
-                    </div>` : '';
+                        <button class="sub-tab-btn ${this.progresTab === 'mesrm' ? 'active' : ''}" onclick="app.setProgresTab('mesrm')">🎯 Mes RM</button>
+                    </div>`;
+                if (this.progresTab === 'mesrm') return tabs + this.renderMesRM();
                 if (avance && this.progresTab === 'rm') return tabs + this.renderRMTab();
                 if (avance && this.progresTab === 'charges') return tabs + this.renderChargesTab();
                 const stats = this.statsExercices();
@@ -4330,11 +4521,11 @@
                     <div class="box">
                         <div class="box-title">🎓 Mode d'utilisation</div>
                         <div class="obj-chips">
-                            <button class="obj-chip ${this.userMode === 'debutant' ? 'active' : ''}" onclick="app.setUserMode('debutant')">🎓 Débutant</button>
+                            <button class="obj-chip ${this.userMode === 'debutant' ? 'active' : ''}" onclick="app.setUserMode('debutant')">🎓 Standard</button>
                             <button class="obj-chip ${this.userMode === 'avance' ? 'active' : ''}" onclick="app.setUserMode('avance')">💪 Avancé</button>
                         </div>
                         <div class="muted mt-2">${this.userMode === 'debutant'
-                            ? 'Séries, reps et récup réglées selon l\'objectif. Charges en niveaux. Ressenti en 4 choix.'
+                            ? 'Séries, reps et récup réglées par l\'appli selon ton thème et ta méthode. Charges calculées à partir de ton RM. Ressenti en 4 choix.'
                             : 'Tous les mobiles et formes, charges en kg, tempo, RPE, test 1RM et calcul des charges.'}</div>
                     </div>
 
@@ -4452,6 +4643,7 @@
                 if (this.userMode === 'debutant') {
                     const labels = {
                         'Endurance Musculaire': '🌿 Forme',
+                        'Test RM': '🎯 Test RM',
                         'Hypertrophie': '💪 Volume',
                         'Force Explosive': '⚡ Puissance',
                         'Force Maximale': '💪 Force Maximale', // Au cas où (anciennes séances)
@@ -4467,6 +4659,7 @@
                         'Hypertrophie': '🏋️ Hypertrophie (volume)',
                         'Endurance de Force': '🔥 Endurance de Force',
                         'Endurance Musculaire': '🏃 Endurance Musculaire (forme)',
+                        'Test RM': '🎯 Test RM',
                         'Personnalisé': '⚙️ Personnalisé'
                     };
                     return labels[mobileValue] || mobileValue;
